@@ -37,3 +37,5 @@
 *.tlog
 *.pdb
 *.log
+*/Release
+*/Debug
