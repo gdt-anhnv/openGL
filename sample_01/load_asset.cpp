@@ -9,157 +9,144 @@
 #include <GL\glew.h>
 #include <vector>
 
-struct Vertex
+AssimpMesh::AssimpMesh() :
+	indices(std::vector<unsigned int>()),
+	indices_buffer(GLuint()),
+	vertices(std::vector<glm::vec3>()),
+	vertex_buffer(GLuint()),
+	uvs(std::vector<glm::vec2>()),
+	uv_buffer(GLuint()),
+	normals(std::vector<glm::vec3>()),
+	normal_buffer(GLuint())
 {
-	float x;
-	float y;
-	float z;
+}
 
-	Vertex(float _x, float _y, float _z) :
-		x(_x),
-		y(_y),
-		z(_z)
-	{}
-};
-
-struct Face
+AssimpMesh::~AssimpMesh()
 {
-	Vertex v1;
-	Vertex v2;
-	Vertex v3;
+}
 
-	Face() :
-		v1(0.0, 0.0, 0.0),
-		v2(0.0, 0.0, 0.0),
-		v3(0.0, 0.0, 0.0)
-	{}
-};
-
-static std::vector<Face> GetFace(aiMesh* mesh)
+void AssimpMesh::BuildMesh(const aiMesh * mesh)
 {
-	std::vector<Face> fs = std::vector<Face>();
+	vertices.reserve(mesh->mNumVertices);
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+		vertices.push_back(glm::vec3(
+			mesh->mVertices[i].x,
+			mesh->mVertices[i].y,
+			mesh->mVertices[i].z));
+
+	indices.reserve(3 * mesh->mNumVertices);
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
-		for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices / 3; j++)
-		{
-			Face f;
-			Vertex v1(mesh->mVertices[mesh->mFaces[i].mIndices[3 * j]].x,
-				mesh->mVertices[mesh->mFaces[i].mIndices[3 * j]].y,
-				mesh->mVertices[mesh->mFaces[i].mIndices[3 * j]].z);
-
-			Vertex v2(mesh->mVertices[mesh->mFaces[i].mIndices[3 * j + 1]].x,
-				mesh->mVertices[mesh->mFaces[i].mIndices[3 * j + 1]].y,
-				mesh->mVertices[mesh->mFaces[i].mIndices[3 * j + 1]].z);
-
-			Vertex v3(mesh->mVertices[mesh->mFaces[i].mIndices[3 * j + 2]].x,
-				mesh->mVertices[mesh->mFaces[i].mIndices[3 * j + 2]].y,
-				mesh->mVertices[mesh->mFaces[i].mIndices[3 * j + 2]].z);
-
-			f.v1 = v1;
-			f.v2 = v2;
-			f.v3 = v3;
-
-			fs.push_back(f);
-		}
+		indices.push_back(mesh->mFaces[i].mIndices[0]);
+		indices.push_back(mesh->mFaces[i].mIndices[1]);
+		indices.push_back(mesh->mFaces[i].mIndices[2]);
 	}
 
-	return fs;
+	uvs.reserve(mesh->mNumVertices);
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+		uvs.push_back(glm::vec2(
+			mesh->mTextureCoords[0][i].x,
+			mesh->mTextureCoords[0][i].y));
+
+	normals.reserve(mesh->mNumVertices);
+	for (unsigned i = 0; i < mesh->mNumVertices; i++)
+		normals.push_back(glm::vec3(
+			mesh->mNormals[i].x,
+			mesh->mNormals[i].y,
+			mesh->mNormals[i].z));
 }
 
-static std::vector<Face> GetMesh(const aiScene* scene)
+void AssimpMesh::CreateBuffer()
 {
-	std::vector<Face> fs = std::vector<Face>();
-	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
-	{
-		std::vector<Face> sfs = GetFace(scene->mMeshes[i]);
-		fs.insert(fs.end(), sfs.begin(), sfs.end());
-	}
-
-	return fs;
-}
-
-GLuint AssimpRep::LoadAsset(const char * path, int& num_ver)
-{
-	GLuint vertex_buffer;
 	glGenBuffers(1, &vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
-	const aiScene* scene = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
+	glGenBuffers(1, &uv_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
+	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
 
-	if (nullptr != scene)
+	glGenBuffers(1, &normal_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+
+	glGenBuffers(1, &indices_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+}
+
+void AssimpMesh::Draw()
+{
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, uv_buffer);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, normal_buffer);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
+
+	glDisableVertexAttribArray(0);
+	glDisableVertexAttribArray(1);
+	glDisableVertexAttribArray(2);
+}
+
+void AssimpMesh::ClearBuffer()
+{
+	glDeleteBuffers(1, &vertex_buffer);
+	glDeleteBuffers(1, &uv_buffer);
+	glDeleteBuffers(1, &normal_buffer);
+}
+
+AssimpRep::AssimpRep(const char * fp) :
+	path(fp),
+	meshes(std::vector<AssimpMesh*>())
+{
+}
+
+AssimpRep::~AssimpRep()
+{
+	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
+		delete *iter;
+
+	meshes.clear();
+}
+
+void AssimpRep::LoadAssimp()
+{
+	const aiScene* scene = aiImportFile(path.c_str(), aiProcessPreset_TargetRealtime_MaxQuality);
+	if (nullptr == scene)
+		return;
+
+	meshes.reserve(scene->mNumMeshes);
+	for (int i = 0; i < scene->mNumMeshes; i++)
 	{
-		std::vector<Face> fs = GetMesh(scene);
-		GLfloat* ver_buffer_data = new GLfloat[fs.size() * 9]();
-		for (int i = 0; i < fs.size(); i++)
-		{
-			ver_buffer_data[i * 9] = fs.at(i).v1.x;
-			ver_buffer_data[i * 9 + 1] = fs.at(i).v1.y;
-			ver_buffer_data[i * 9 + 2] = fs.at(i).v1.z;
-			ver_buffer_data[i * 9 + 3] = fs.at(i).v2.x;
-			ver_buffer_data[i * 9 + 4] = fs.at(i).v2.y;
-			ver_buffer_data[i * 9 + 5] = fs.at(i).v2.z;
-			ver_buffer_data[i * 9 + 6] = fs.at(i).v3.x;
-			ver_buffer_data[i * 9 + 7] = fs.at(i).v3.y;
-			ver_buffer_data[i * 9 + 8] = fs.at(i).v3.z;
-		}
-
-		glBufferData(GL_ARRAY_BUFFER, fs.size() * 9, ver_buffer_data, GL_STATIC_DRAW);
-		num_ver = fs.size() * 9;
-		delete[] ver_buffer_data;
+		AssimpMesh* mesh = new AssimpMesh();
+		mesh->BuildMesh(scene->mMeshes[i]);
+		meshes.push_back(mesh);
 	}
-
-	delete scene;
-
-	return vertex_buffer;
 }
 
-#define aisgl_min(x,y) (x<y?x:y)
-#define aisgl_max(x,y) (y>x?y:x)
-
-static void get_bounding_box_for_node(
-	const aiScene* scene,
-	const struct aiNode* nd,
-	aiVector3t<float>* min,
-	aiVector3t<float>* max,
-	aiMatrix4x4t<float>* trafo)
+void AssimpRep::CreateBuffer()
 {
-	aiMatrix4x4t<float> prev;
-	unsigned int n = 0, t;
-
-	prev = *trafo;
-	aiMultiplyMatrix4(trafo, &nd->mTransformation);
-
-	for (; n < nd->mNumMeshes; ++n) {
-		const struct aiMesh* mesh = scene->mMeshes[nd->mMeshes[n]];
-		for (t = 0; t < mesh->mNumVertices; ++t) {
-
-			aiVector3t<float> tmp = mesh->mVertices[t];
-			aiTransformVecByMatrix4(&tmp, trafo);
-
-			min->x = aisgl_min(min->x, tmp.x);
-			min->y = aisgl_min(min->y, tmp.y);
-			min->z = aisgl_min(min->z, tmp.z);
-
-			max->x = aisgl_max(max->x, tmp.x);
-			max->y = aisgl_max(max->y, tmp.y);
-			max->z = aisgl_max(max->z, tmp.z);
-		}
-	}
-
-	for (n = 0; n < nd->mNumChildren; ++n) {
-		get_bounding_box_for_node(scene, nd->mChildren[n], min, max, trafo);
-	}
-	*trafo = prev;
+	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
+		(*iter)->CreateBuffer();
 }
 
-void AssimpRep::GetBound(const char * path, aiVector3t<float>* min, aiVector3t<float>* max)
+void AssimpRep::Draw()
 {
-	const aiScene* scene = aiImportFile(path, aiProcessPreset_TargetRealtime_MaxQuality);
+	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
+		(*iter)->Draw();
+}
 
-	struct aiMatrix4x4t<float> trafo;
-	aiIdentityMatrix4(&trafo);
-
-	min->x = min->y = min->z = 1e10f;
-	max->x = max->y = max->z = -1e10f;
-	get_bounding_box_for_node(scene, scene->mRootNode, min, max, &trafo);
+void AssimpRep::ClearBuffer()
+{
+	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
+		(*iter)->ClearBuffer();
 }
