@@ -150,10 +150,12 @@
     <ClCompile Include="load_asset.cpp" />
     <ClCompile Include="shader.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="view_port.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="load_asset.h" />
     <ClInclude Include="shader.h" />
+    <ClInclude Include="view_port.h" />
     <ClInclude Include="window_wrap.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

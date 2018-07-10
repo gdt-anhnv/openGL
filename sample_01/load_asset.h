@@ -35,6 +35,8 @@ class AssimpRep
 private:
 	std::string path;
 	std::vector<AssimpMesh*> meshes;
+	GLuint vertex_ids;
+
 public:
 	AssimpRep(const char* fp);
 	~AssimpRep();

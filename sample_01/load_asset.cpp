@@ -135,6 +135,9 @@ void AssimpRep::LoadAssimp()
 
 void AssimpRep::CreateBuffer()
 {
+	glGenVertexArrays(1, &vertex_ids);
+	glBindVertexArray(vertex_ids);
+
 	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
 		(*iter)->CreateBuffer();
 }
@@ -149,4 +152,6 @@ void AssimpRep::ClearBuffer()
 {
 	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
 		(*iter)->ClearBuffer();
+
+	glDeleteBuffers(1, &vertex_ids);
 }
