@@ -59,8 +59,10 @@ void ViewPort::MouseInput()
 	delta_x = mouse_coord[0] - mx;
 	delta_y = mouse_coord[1] - my;
 
-	theta_angle += delta_x / 400.0;
-	phi_angle += delta_y / 400.0;
+	if (delta_x > delta_y)
+		theta_angle += delta_x / 400.0;
+	else
+		phi_angle += delta_y / 400.0;
 
 	mouse_coord[0] = mx;
 	mouse_coord[1] = my;
@@ -72,9 +74,9 @@ void ViewPort::MouseInput()
 	view_pos[2] = camera_distance * std::cos(theta_angle);
 
 	double up[3] = {
-		std::sin(theta_angle + 3.14 / 2) * std::cos(phi_angle + 3.14 / 2),
-		std::sin(theta_angle + 3.14 / 2) * std::sin(phi_angle + 3.14 / 2),
-		std::cos(theta_angle + 3.14 / 2)
+		std::sin(theta_angle + 3.14 / 2.0) * std::cos(phi_angle),
+		std::sin(theta_angle + 3.14 / 2.0) * std::sin(phi_angle),
+		std::cos(theta_angle + 3.14 / 2.0)
 	};
 
 	view_matrix = glm::lookAt(glm::vec3(view_pos[0], view_pos[1], view_pos[2]),

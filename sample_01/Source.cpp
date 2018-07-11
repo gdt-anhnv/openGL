@@ -107,7 +107,7 @@ int main()
 		Set our "myTextureSampler" sampler to use Texture Unit 0
 		glUniform1i(TextureID, 0);
 #endif
-		glm::vec3 light_pos = glm::vec3(4.0f, 4.0f, 4.0f);
+		glm::vec3 light_pos = glm::vec3(-4.0f, -4.0f, -4.0f);
 		glUniform3f(light_id, light_pos.x, light_pos.y, light_pos.z);
 
 		//draw here

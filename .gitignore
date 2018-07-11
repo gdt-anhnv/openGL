@@ -32,7 +32,6 @@
 *.app
 
 *.db
-*.filters
 *.suo
 *.tlog
 *.pdb
