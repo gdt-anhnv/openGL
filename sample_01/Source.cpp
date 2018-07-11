@@ -83,6 +83,7 @@ int main()
 	GLuint TextureID = glGetUniformLocation(program_id, "myTextureSampler");
 #endif
 
+	//create objects
 	AssimpRep* assimp_rep = new AssimpRep("D:\\Team TP HCM\\Game Dev\\openGL\\sample3D\\Monkey_head\\suzanne.obj");
 	assimp_rep->LoadAssimp();
 
