@@ -8,6 +8,21 @@
 #include <iostream>
 #include <vector>
 
+struct Point
+{
+	float x;
+	float y;
+	float z;
+
+	Point(float _x, float _y, float _z) :
+		x(_x), y(_y), z(_z) {}
+
+	double Distance(const Point& p)
+	{
+		return std::sqrt((x - p.x) * (x - p.x) + (y - p.y) * (y - p.y) + (z - p.z) * (z - p.z));
+	}
+};
+
 class aiMesh;
 class AssimpMesh
 {
@@ -28,6 +43,8 @@ public:
 	void CreateBuffer();
 	void Draw();
 	void ClearBuffer();
+	void GetBoundMesh(Point& min, Point& max);
+	void MoveMesh(double dx, double dy, double dz);
 };
 
 class AssimpRep
@@ -45,5 +62,7 @@ public:
 	void CreateBuffer();
 	void Draw();
 	void ClearBuffer();
+	void GetBoundModel(Point& min, Point& max);
+	void MoveModel(double dx, double dy, double dz);
 };
 #endif

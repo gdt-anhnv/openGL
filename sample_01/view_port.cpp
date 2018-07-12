@@ -83,7 +83,7 @@ void ViewPort::MouseInput()
 		glm::vec3(center_point[0], center_point[1], center_point[2]),
 		glm::vec3(up[0], up[1], up[2]));
 
-	projection_matrix = glm::perspective(glm::radians(45.0f), 1366.0f / 768.0f, 0.1f, 100.0f);
+	projection_matrix = glm::perspective(glm::radians(45.0f), 1366.0f / 768.0f, 0.1f, 2000.0f);
 
 	mvp = projection_matrix * glm::mat4(1.0f) * view_matrix;
 }

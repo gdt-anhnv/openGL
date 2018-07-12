@@ -42,11 +42,14 @@ void AssimpMesh::BuildMesh(const aiMesh * mesh)
 		indices.push_back(mesh->mFaces[i].mIndices[2]);
 	}
 
-	uvs.reserve(mesh->mNumVertices);
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-		uvs.push_back(glm::vec2(
-			mesh->mTextureCoords[0][i].x,
-			mesh->mTextureCoords[0][i].y));
+	if (nullptr != mesh->mTextureCoords[0])
+	{
+		uvs.reserve(mesh->mNumVertices);
+		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+			uvs.push_back(glm::vec2(
+				mesh->mTextureCoords[0][i].x,
+				mesh->mTextureCoords[0][i].y));
+	}
 
 	normals.reserve(mesh->mNumVertices);
 	for (unsigned i = 0; i < mesh->mNumVertices; i++)
@@ -104,6 +107,38 @@ void AssimpMesh::ClearBuffer()
 	glDeleteBuffers(1, &normal_buffer);
 }
 
+void AssimpMesh::GetBoundMesh(Point & min, Point & max)
+{
+	min = Point(vertices.front().x, vertices.front().y, vertices.front().z);
+	max = Point(vertices.front().x, vertices.front().y, vertices.front().z);
+	for (auto iter = vertices.begin(); iter != vertices.end(); iter++)
+	{
+		if (iter->x < min.x)
+			min.x = iter->x;
+		if (iter->y < min.y)
+			min.y = iter->y;
+		if (iter->z < min.z)
+			min.z = iter->z;
+
+		if (iter->x > max.x)
+			max.x = iter->x;
+		if (iter->y > max.y)
+			max.y = iter->y;
+		if (iter->z > max.z)
+			max.z = iter->z;
+	}
+}
+
+void AssimpMesh::MoveMesh(double dx, double dy, double dz)
+{
+	for (auto iter = vertices.begin(); iter != vertices.end(); iter++)
+	{
+		iter->x += dx;
+		iter->y += dy;
+		iter->z += dz;
+	}
+}
+
 AssimpRep::AssimpRep(const char * fp) :
 	path(fp),
 	meshes(std::vector<AssimpMesh*>())
@@ -154,4 +189,35 @@ void AssimpRep::ClearBuffer()
 		(*iter)->ClearBuffer();
 
 	glDeleteBuffers(1, &vertex_ids);
+}
+
+void AssimpRep::GetBoundModel(Point & min, Point & max)
+{
+	meshes.front()->GetBoundMesh(min, max);
+	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
+	{
+		Point tmp_min = Point(0.0, 0.0, 0.0);
+		Point tmp_max = Point(0.0, 0.0, 0.0);
+
+		(*iter)->GetBoundMesh(tmp_min, tmp_max);
+		if (tmp_min.x < min.x)
+			min.x = tmp_min.x;
+		if (tmp_min.y < min.y)
+			min.y = tmp_min.y;
+		if (tmp_min.z < min.z)
+			min.z = tmp_min.z;
+
+		if (tmp_max.x > max.x)
+			max.x = tmp_max.x;
+		if (tmp_max.y > max.y)
+			max.y = tmp_max.y;
+		if (tmp_max.z > max.z)
+			max.z = tmp_max.z;
+	}
+}
+
+void AssimpRep::MoveModel(double dx, double dy, double dz)
+{
+	for (auto iter = meshes.begin(); iter != meshes.end(); iter++)
+		(*iter)->MoveMesh(dx, dy, dz);
 }
