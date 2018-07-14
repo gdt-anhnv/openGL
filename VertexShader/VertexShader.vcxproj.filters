@@ -13,5 +13,53 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\shader">
+      <UniqueIdentifier>{a2c4dae1-a30d-4cb6-a1b0-d7945927d66f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shader">
+      <UniqueIdentifier>{0d5fd181-f341-4236-a6c9-42b2cc931295}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\LoadModel">
+      <UniqueIdentifier>{9ed090d1-c424-4ce0-8d41-74f979cf6db4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\LoadModel">
+      <UniqueIdentifier>{e11b2753-d443-496c-aca0-a6680347b2eb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shader.cpp">
+      <Filter>Source Files\shader</Filter>
+    </ClCompile>
+    <ClCompile Include="load_asset.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="view_port.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="shader.h">
+      <Filter>Header Files\shader</Filter>
+    </ClInclude>
+    <ClInclude Include="window_wrap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="view_port.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="load_asset.h">
+      <Filter>Header Files\LoadModel</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="VertexShader.shader">
+      <Filter>Header Files\shader</Filter>
+    </None>
+    <None Include="FrameShader.shader">
+      <Filter>Header Files\shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

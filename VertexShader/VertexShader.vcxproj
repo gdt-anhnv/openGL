@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{07DD9D05-1DF3-4025-AC9D-929FAA9C0540}</ProjectGuid>
+    <ProjectGuid>{3176AB78-5F6A-41F7-851F-57DBF2202933}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>VertexShader</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
@@ -133,15 +133,32 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(OPENGL_LIB)\GLEW\include;$(OPENGL_LIB)\GLFW\include;$(OPENGL_LIB)\glm;$(ASSIMP_LIB)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw3.lib;glew32.lib;glew32s.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(OPENGL_LIB)\GLEW\lib\Release\x64;$(OPENGL_LIB)\GLFW\Build\x64\Release;$(ASSIMP_LIB)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="load_asset.cpp" />
+    <ClCompile Include="shader.cpp" />
+    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="view_port.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="load_asset.h" />
+    <ClInclude Include="shader.h" />
+    <ClInclude Include="view_port.h" />
+    <ClInclude Include="window_wrap.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FrameShader.shader" />
+    <None Include="VertexShader.shader" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
