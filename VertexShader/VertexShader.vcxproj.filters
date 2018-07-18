@@ -16,6 +16,12 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{715edc49-f7f4-4ea6-9db7-e2cbc0ec8b23}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\LightShader">
+      <UniqueIdentifier>{21fa990e-2465-42d8-ba0e-898ff6ea3250}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\SimpleShader">
+      <UniqueIdentifier>{db993c3a-224e-403a-a66f-66342e559ae1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -23,20 +29,37 @@
     </ClCompile>
     <ClCompile Include="shader.cpp">
       <Filter>Source Files</Filter>
-
+    </ClCompile>
+    <ClCompile Include="LightShader\light_shader.cpp">
+      <Filter>Shader\LightShader</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleShader\simple_shader.cpp">
+      <Filter>Shader\SimpleShader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LightShader\light_shader.h">
+      <Filter>Shader\LightShader</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleShader\simple_shader.h">
+      <Filter>Shader\SimpleShader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="VertexShader.shader">
-      <Filter>Shader</Filter>
+    <None Include="LightShader\LightFrameShader.shader">
+      <Filter>Shader\LightShader</Filter>
     </None>
-    <None Include="FrameShader.shader">
-      <Filter>Shader</Filter>
+    <None Include="LightShader\LightVertexShader.shader">
+      <Filter>Shader\LightShader</Filter>
+    </None>
+    <None Include="SimpleShader\SimpleFrameShader.shader">
+      <Filter>Shader\SimpleShader</Filter>
+    </None>
+    <None Include="SimpleShader\SimpleVertexShader.shader">
+      <Filter>Shader\SimpleShader</Filter>
     </None>
   </ItemGroup>
 </Project>

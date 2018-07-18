@@ -14,7 +14,8 @@ GLFWwindow* window;
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
-#include "shader.h"
+#include "LightShader\light_shader.h"
+#include "SimpleShader\simple_shader.h"
 
 int main(void)
 {
@@ -62,17 +63,13 @@ int main(void)
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-	GLuint vertex_arr_id;
-	glGenVertexArrays(1, &vertex_arr_id);
-	glBindVertexArray(vertex_arr_id);
+	// Create Light shader for objects
+	LightShader* light_shader = 
+		new LightShader("LightShader\\LightVertexShader.shader", "LightShader\\LightFrameShader.shader");
 
-	// Create and compile our GLSL program from the shaders
-	GLuint program_id = LoadShaders("VertexShader.shader", "FrameShader.shader");
-
-	// Get a handle for our "MVP" uniform
-	GLuint m_mat_id = glGetUniformLocation(program_id, "model");
-	GLuint v_mat_id = glGetUniformLocation(program_id, "view");
-	GLuint p_mat_id = glGetUniformLocation(program_id, "projection");
+	//Create light object
+	SimpleShader* simple_shader =
+		new SimpleShader("SimpleShader\\SimpleVertexShader.shader", "SimpleShader\\SimpleFrameShader.shader");
 
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 proj_mat = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
@@ -82,9 +79,8 @@ int main(void)
 		glm::vec3(0, 0, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 	);
-	// Model matrix : an identity matrix (model will be at the origin)
-	glm::mat4 model_mat = glm::mat4(1.0f);
-	// Our ModelViewProjection : multiplication of our 3 matrices
+
+	GLfloat light_position[3] = { 1.2f, 1.0f, 2.0f };
 
 	static const GLfloat vertices[] =
 	{
@@ -131,68 +127,65 @@ int main(void)
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f };
 
 	GLuint vbo;
-	glGenBuffers(1, &vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
 	GLuint cube_vao;
-	glGenVertexArrays(1, &cube_vao);
-	glBindVertexArray(cube_vao);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	{
+		glGenVertexArrays(1, &cube_vao);
+		glGenBuffers(1, &vbo);
 
-	//GLuint light_ver;
-	//glGenBuffers(1, &light_ver);
-	//glBindBuffer(GL_ARRAY_BUFFER, light_ver);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	//GLuint light_buffer;
-	//glGenVertexArrays(1, &light_buffer);
-	//glBindVertexArray(light_buffer);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glBindVertexArray(cube_vao);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+		glEnableVertexAttribArray(0);
+
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+		glEnableVertexAttribArray(1);
+	}
+
+	GLuint light_vao;
+	{
+		glGenVertexArrays(1, &light_vao);
+		glBindVertexArray(light_vao);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+		glEnableVertexAttribArray(0);
+	}
 
 	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//M-V-P matrix
+		glm::mat4 model_mat = glm::mat4(1.0f);
+
 		// Use our shader
-		glUseProgram(program_id);
-
-		//color
-		glm::vec3 obj_color = glm::vec3(0.1f, 0.2f, 0.7f);
-		GLuint color_id = glGetUniformLocation(program_id, "object_color");
-
-		//light position
-		GLuint light_pos_id = glGetUniformLocation(program_id, "light_pos");
-		glUniform3f(light_pos_id, 1.0f, 1.0f, 1.0f);
-
-		//light color
-		GLuint light_color_id = glGetUniformLocation(program_id, "light_color");
-		glUniform3f(light_color_id, 1.0f, 1.0f, 1.0f);
-
-		model_mat = glm::mat4(1.0f);
-		glUniformMatrix4fv(m_mat_id, 1, GL_FALSE, &model_mat[0][0]);
-		glUniformMatrix4fv(v_mat_id, 1, GL_FALSE, &view_mat[0][0]);
-		glUniformMatrix4fv(p_mat_id, 1, GL_FALSE, &proj_mat[0][0]);
+		light_shader->UseShader();
+		light_shader->SetObjectColor(1.0f, 0.5f, 0.31f);
+		light_shader->SetLightPosition(light_position[0], light_position[1], light_position[2]);
+		light_shader->SetLightColor(1.0f, 1.0f, 1.0f);
+		//setup light shader
+		light_shader->SetModelMatrix(model_mat);
+		light_shader->SetViewMatrix(view_mat);
+		light_shader->SetProjectionMatrix(proj_mat);
 
 		glBindVertexArray(cube_vao);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		glUniform3f(color_id, obj_color[0], obj_color[1], obj_color[2]);
+		//use simple shader
+		simple_shader->UseShader();
+		simple_shader->SetObjectColor(1.0f, 1.0f, 1.0f);
+		//setup light object
+		model_mat = glm::translate(model_mat, glm::vec3(light_position[0], light_position[1], light_position[2]));
+		model_mat = glm::scale(model_mat, glm::vec3(0.2));
+		simple_shader->SetModelMatrix(model_mat);
+		simple_shader->SetViewMatrix(view_mat);
+		simple_shader->SetProjectionMatrix(proj_mat);
 
-		//model_mat = glm::translate(model_mat, glm::vec3(1.2f, 1.0f, 2.0f));
-		//model_mat = glm::scale(model_mat, glm::vec3(0.2f));
-		//glUniformMatrix4fv(m_mat_id, 1, GL_FALSE, &model_mat[0][0]);
-
-		//glUniform3f(color_id, light_color[0], light_color[1], light_color[2]);
-
-		//glEnableVertexAttribArray(0);
-		//glBindVertexArray(light_buffer);
-		//glDrawArrays(GL_TRIANGLES, 0, 36);
-		//glDisableVertexAttribArray(0);
+		glBindVertexArray(light_vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -203,13 +196,15 @@ int main(void)
 		glfwWindowShouldClose(window) == 0);
 
 	// Cleanup VBO and shader
-	glDeleteBuffers(1, &cube_vao);
-	//glDeleteBuffers(1, &colorbuffer);
-	glDeleteProgram(program_id);
-	glDeleteVertexArrays(1, &vertex_arr_id);
+	glDeleteVertexArrays(1, &cube_vao);
+	glDeleteBuffers(1, &vbo);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
+
+	//delete shader
+	delete light_shader;
+	delete simple_shader;
 
 	return 0;
 }
