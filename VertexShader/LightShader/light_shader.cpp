@@ -7,6 +7,7 @@
 #define LIGHT_COLOR			"light_color"
 #define LIGHT_POSITION		"light_pos"
 #define OBJECT_COLOR		"object_color"
+#define VIEW_POSITION		"view_position"
 
 LightShader::LightShader(const char* vs, const char* fs) :
 	program_id(GLuint()),
@@ -51,4 +52,9 @@ void LightShader::SetLightPosition(const GLfloat & x, const GLfloat & y, const G
 void LightShader::SetObjectColor(const GLfloat & r, const GLfloat & g, const GLfloat & b)
 {
 	glUniform3f(glGetUniformLocation(program_id, OBJECT_COLOR), r, g, b);
+}
+
+void LightShader::SetViewPosition(const GLfloat & x, const GLfloat & y, const GLfloat & z)
+{
+	glUniform3f(glGetUniformLocation(program_id, VIEW_POSITION), x, y, z);
 }

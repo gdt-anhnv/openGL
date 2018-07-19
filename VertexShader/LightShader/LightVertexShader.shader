@@ -16,6 +16,6 @@ void main()
 	// Output position of the vertex, in clip space : MVP * position
 	gl_Position = projection * view * model * vec4(pos, 1.0);
 
-	normal = normal_source;
+	normal = mat3(transpose(inverse(model))) * normal_source;
 	frag_pos = vec3(model * vec4(pos, 1.0));
 }

@@ -28,6 +28,7 @@ public:
 	void SetLightColor(const GLfloat& r, const GLfloat& g, const GLfloat& b);
 	void SetLightPosition(const GLfloat& x, const GLfloat& y, const GLfloat& z);
 	void SetObjectColor(const GLfloat& r, const GLfloat& g, const GLfloat& b);
+	void SetViewPosition(const GLfloat& x, const GLfloat& y, const GLfloat& z);
 };
 
 #endif

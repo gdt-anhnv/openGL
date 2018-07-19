@@ -71,16 +71,17 @@ int main(void)
 	SimpleShader* simple_shader =
 		new SimpleShader("SimpleShader\\SimpleVertexShader.shader", "SimpleShader\\SimpleFrameShader.shader");
 
+	glm::vec3 view_pos = glm::vec3(4.0f, 1.0f, -3.0f);
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 proj_mat = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 	// Camera matrix
 	glm::mat4 view_mat = glm::lookAt(
-		glm::vec3(4, 3, -3), // Camera is at (4,3,-3), in World Space
+		view_pos, // Camera is at (4,3,-3), in World Space
 		glm::vec3(0, 0, 0), // and looks at the origin
 		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
 	);
 
-	GLfloat light_position[3] = { 1.2f, 1.0f, 2.0f };
+	GLfloat light_position[3] = { 2.0f, 1.0, 1.0 };
 
 	static const GLfloat vertices[] =
 	{
@@ -166,6 +167,7 @@ int main(void)
 		light_shader->SetObjectColor(1.0f, 0.5f, 0.31f);
 		light_shader->SetLightPosition(light_position[0], light_position[1], light_position[2]);
 		light_shader->SetLightColor(1.0f, 1.0f, 1.0f);
+		light_shader->SetViewPosition(view_pos[0], view_pos[1], view_pos[2]);
 		//setup light shader
 		light_shader->SetModelMatrix(model_mat);
 		light_shader->SetViewMatrix(view_mat);
