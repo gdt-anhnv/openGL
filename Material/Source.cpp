@@ -18,8 +18,26 @@ using namespace glm;
 #include "SimpleShader\simple_shader.h"
 
 #include "stb_image.h"
+#include "camera.h"
 
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+
+// timing
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+Camera camera(glm::vec3(.0f, .0f, 4.0f));
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 unsigned int LoadTexture(char const * path);
+void ProcessInput(GLFWwindow *window, Camera& camera);
 int main(void)
 {
 	// Initialise GLFW
@@ -74,17 +92,11 @@ int main(void)
 	SimpleShader* simple_shader =
 		new SimpleShader("SimpleShader\\SimpleVertexShader.shader", "SimpleShader\\SimpleFrameShader.shader");
 
-	glm::vec3 view_pos = glm::vec3(4.0f, 1.0f, -3.0f);
+	glm::vec3 view_pos = glm::vec3(3.0f, 2.0f, -2.0f);
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 proj_mat = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-	// Camera matrix
-	glm::mat4 view_mat = glm::lookAt(
-		view_pos, // Camera is at (4,3,-3), in World Space
-		glm::vec3(0, 0, 0), // and looks at the origin
-		glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
-	);
 
-	GLfloat light_position[3] = { 2.0f, 1.0, 1.0 };
+	GLfloat light_position[3] = { 1.0f, 1.0, 1.0 };
 
 	static const GLfloat vertices[] =
 	{
@@ -162,14 +174,53 @@ int main(void)
 		glEnableVertexAttribArray(0);
 	}
 
-	unsigned int diffuseMap = LoadTexture("D:\\Team TP HCM\\Game Dev\\openGL\\Material\\texture.png");
+	unsigned int diffuse_map = LoadTexture("D:\\Team TP HCM\\Game Dev\\openGL\\Material\\texture.png");
 
 	do {
+		float current_frame = glfwGetTime();
+		deltaTime = current_frame - lastFrame;
+		lastFrame = current_frame;
+
+		// input
+		// -----
+		ProcessInput(window, camera);
+
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//M-V-P matrix
 		glm::mat4 model_mat = glm::mat4(1.0f);
+		glm::mat4 view_mat = camera.GetViewMatrix();
+		//shader object
+		light_shader->UseShader();
+		light_shader->SetLightPosition(light_position[0], light_position[1], light_position[2]);
+		light_shader->SetViewPosition(view_pos[0], view_pos[1], view_pos[2]);
+		light_shader->SetLightAmbient(0.2f, 0.2f, 0.2f);
+		light_shader->SetLightDiffuse(0.5f, 0.5f, 0.5f);
+		light_shader->SetLightSpecular(1.0f, 1.0f, 1.0f);
+
+		light_shader->SetMaterialSpecular(0.5f, 0.5f, 0.5f);
+		light_shader->SetMaterialShininess(64.0f);
+
+		light_shader->SetModelMatrix(model_mat);
+		light_shader->SetViewMatrix(view_mat);
+		light_shader->SetProjectionMatrix(proj_mat);
+
+		glBindVertexArray(cube_vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//light object
+		simple_shader->UseShader();
+		simple_shader->SetObjectColor(1.0f, 1.0f, 1.0f);
+		model_mat = glm::mat4(1.0f);
+		model_mat = glm::translate(model_mat, glm::vec3(light_position[0], light_position[1], light_position[2]));
+		model_mat = glm::scale(model_mat, glm::vec3(0.2f)); // a smaller cube
+		simple_shader->SetModelMatrix(model_mat);
+		simple_shader->SetProjectionMatrix(proj_mat);
+		simple_shader->SetViewMatrix(view_mat);
+
+		glBindVertexArray(light_vao);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -225,3 +276,58 @@ unsigned int LoadTexture(char const * path)
 
 	return textureID;
 }
+
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void ProcessInput(GLFWwindow *window, Camera& camera)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
+}
+
+
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+	lastX = xpos;
+	lastY = ypos;
+
+	camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	camera.ProcessMouseScroll(yoffset);
+}
+

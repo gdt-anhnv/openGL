@@ -12,9 +12,6 @@ class SimpleShader
 private:
 	GLuint program_id;
 
-	std::string vertex_shader_file;
-	std::string frame_shader_file;
-
 public:
 	SimpleShader(const char* vs, const char* fs);
 	~SimpleShader();

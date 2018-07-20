@@ -7,9 +7,7 @@
 #define OBJECT_COLOR		"object_color"
 
 SimpleShader::SimpleShader(const char* vs, const char* fs) :
-	program_id(GLuint()),
-	vertex_shader_file(std::string(vs)),
-	frame_shader_file(std::string(fs))
+	program_id(GLuint())
 {
 	program_id = LoadShaders(vs, fs);
 }
