@@ -6,13 +6,14 @@ out vec4 color;
 struct Material
 {
 	sampler2D diffuse;
-	vec3 specular;
+	sampler2D specular;
 	float shininess;
 };
 
 struct Light
 {
 	vec3 position;
+	vec3 direction;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -34,7 +35,8 @@ void main()
 
 	//diffuse
 	vec3 norm = normalize(normal);
-	vec3 light_dir = normalize(light.position - frag_pos);
+	//vec3 light_dir = normalize(light.position - frag_pos);
+	vec3 light_dir = normalize(-light.direction);
 	float diff = max(dot(norm, light_dir), 0.0);
 	vec3 diffuse = light.diffuse * diff * texture(material.diffuse, texture_coord).rgb;
 
@@ -42,7 +44,7 @@ void main()
 	vec3 view_dir = normalize(view_position - frag_pos);
 	vec3 reflection_dir = reflect(-light_dir, norm);
 	float spec = pow(max(dot(view_dir, reflection_dir), 0.0), material.shininess);
-	vec3 specular = light.specular * (spec * material.specular);
+	vec3 specular = light.specular * spec * texture(material.specular, texture_coord).rgb;
 
 	//result
 	vec3 ret = ambient + diffuse + specular;

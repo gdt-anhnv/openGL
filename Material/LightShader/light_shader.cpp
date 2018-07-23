@@ -5,6 +5,7 @@
 #define VIEW_MATRIX			"view"
 #define PROJECTION_MATRIX	"projection"
 #define LIGHT_COLOR			"light_color"
+#define LIGHT_DIRECTION		"light.direction"
 #define LIGHT_POSITION		"light.position"
 #define LIGHT_AMBIENT		"light.ambient"
 #define LIGHT_DIFFUSE		"light.diffuse"
@@ -12,6 +13,7 @@
 #define OBJECT_COLOR		"object_color"
 #define VIEW_POSITION		"view_position"
 
+#define MATERIAL_DIFFUSE	"material.diffuse"
 #define MATERIAL_SPECULAR	"material.specular"
 #define MATERIAL_SHININESS	"material.shininess"
 
@@ -43,6 +45,11 @@ void LightShader::SetViewMatrix(const glm::mat4 & mat)
 void LightShader::SetProjectionMatrix(const glm::mat4 & mat)
 {
 	glUniformMatrix4fv(glGetUniformLocation(program_id, PROJECTION_MATRIX), 1, GL_FALSE, &mat[0][0]);
+}
+
+void LightShader::SetLightDirection(const GLfloat & x, const GLfloat & y, const GLfloat & z)
+{
+	glUniform3f(glGetUniformLocation(program_id, LIGHT_DIRECTION), x, y, z);
 }
 
 void LightShader::SetLightColor(const GLfloat & r, const GLfloat & g, const GLfloat & b)
@@ -80,9 +87,14 @@ void LightShader::SetLightSpecular(const double & v0, const double & v1, const d
 	glUniform3f(glGetUniformLocation(program_id, LIGHT_SPECULAR), v0, v1, v2);
 }
 
-void LightShader::SetMaterialSpecular(const double & v0, const double & v1, const double & v2)
+void LightShader::SetMaterialSpecular(int val)
 {
-	glUniform3f(glGetUniformLocation(program_id, MATERIAL_SPECULAR), v0, v1, v2);
+	glUniform1i(glGetUniformLocation(program_id, MATERIAL_SPECULAR), val);
+}
+
+void LightShader::SetMaterialDiffuse(int val)
+{
+	glUniform1i(glGetUniformLocation(program_id, MATERIAL_DIFFUSE), val);
 }
 
 void LightShader::SetMaterialShininess(const double & val)

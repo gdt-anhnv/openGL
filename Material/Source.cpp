@@ -96,7 +96,7 @@ int main(void)
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 proj_mat = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 
-	GLfloat light_position[3] = { 1.0f, 1.0, 1.0 };
+	GLfloat light_position[3] = { 2.0f, -1.0, 1.0 };
 
 	static const GLfloat vertices[] =
 	{
@@ -174,7 +174,12 @@ int main(void)
 		glEnableVertexAttribArray(0);
 	}
 
+	unsigned int specular_map = LoadTexture("D:\\Team TP HCM\\Game Dev\\openGL\\Material\\container2_specular.png");
 	unsigned int diffuse_map = LoadTexture("D:\\Team TP HCM\\Game Dev\\openGL\\Material\\texture.png");
+
+	light_shader->UseShader();
+	light_shader->SetMaterialDiffuse(0);
+	light_shader->SetMaterialSpecular(1);
 
 	do {
 		float current_frame = glfwGetTime();
@@ -182,7 +187,6 @@ int main(void)
 		lastFrame = current_frame;
 
 		// input
-		// -----
 		ProcessInput(window, camera);
 
 		// Clear the screen
@@ -194,17 +198,24 @@ int main(void)
 		//shader object
 		light_shader->UseShader();
 		light_shader->SetLightPosition(light_position[0], light_position[1], light_position[2]);
+		light_shader->SetLightDirection(1.0f, 1.0f, 1.0f);
 		light_shader->SetViewPosition(view_pos[0], view_pos[1], view_pos[2]);
 		light_shader->SetLightAmbient(0.2f, 0.2f, 0.2f);
 		light_shader->SetLightDiffuse(0.5f, 0.5f, 0.5f);
 		light_shader->SetLightSpecular(1.0f, 1.0f, 1.0f);
 
-		light_shader->SetMaterialSpecular(0.5f, 0.5f, 0.5f);
 		light_shader->SetMaterialShininess(64.0f);
 
 		light_shader->SetModelMatrix(model_mat);
 		light_shader->SetViewMatrix(view_mat);
 		light_shader->SetProjectionMatrix(proj_mat);
+
+		// bind diffuse map
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuse_map);
+		// bind specular map
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specular_map);
 
 		glBindVertexArray(cube_vao);
 		glDrawArrays(GL_TRIANGLES, 0, 36);

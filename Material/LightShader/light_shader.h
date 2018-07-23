@@ -25,6 +25,7 @@ public:
 	void SetViewMatrix(const glm::mat4& mat);
 	void SetProjectionMatrix(const glm::mat4& mat);
 
+	void SetLightDirection(const GLfloat& x, const GLfloat& y, const GLfloat& z);
 	void SetLightColor(const GLfloat& r, const GLfloat& g, const GLfloat& b);
 	void SetLightPosition(const GLfloat& x, const GLfloat& y, const GLfloat& z);
 	void SetObjectColor(const GLfloat& r, const GLfloat& g, const GLfloat& b);
@@ -33,7 +34,8 @@ public:
 	void SetLightDiffuse(const double& v0, const double& v1, const double& v2);
 	void SetLightSpecular(const double& v0, const double& v1, const double& v2);
 
-	void SetMaterialSpecular(const double& v0, const double& v1, const double& v2);
+	void SetMaterialSpecular(int val);
+	void SetMaterialDiffuse(int val);
 	void SetMaterialShininess(const double& val);
 };
 
