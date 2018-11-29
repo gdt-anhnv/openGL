@@ -1,0 +1,9 @@
+﻿  Building Custom Rule D:/openGL/assimp-4.1.0/tools/assimp_cmd/CMakeLists.txt
+  CMake does not need to re-run because D:/openGL/assimp-4.1.0/Build/tools/assimp_cmd/CMakeFiles/generate.stamp is up-to-date.
+  CompareDump.cpp
+  ImageExtractor.cpp
+  Main.cpp
+  WriteDumb.cpp
+  Info.cpp
+  Export.cpp
+  assimp_cmd.vcxproj -> D:\openGL\assimp-4.1.0\Build\tools\assimp_cmd\Release\assimp.exe

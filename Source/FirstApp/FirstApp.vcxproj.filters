@@ -27,6 +27,15 @@
     <ClCompile Include="entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="common\objloader.cpp">
+      <Filter>Header Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\texture.cpp">
+      <Filter>Header Files\common</Filter>
+    </ClCompile>
+    <ClCompile Include="common\controls.cpp">
+      <Filter>Header Files\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity.h">
@@ -36,6 +45,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common\shader.hpp">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\objloader.hpp">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\texture.hpp">
+      <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="common\controls.hpp">
       <Filter>Header Files\common</Filter>
     </ClInclude>
   </ItemGroup>

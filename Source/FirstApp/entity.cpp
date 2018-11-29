@@ -1,4 +1,5 @@
 #include "entity.h"
+#include "common/objloader.hpp"
 
 // Include GLEW
 #include <GL/glew.h>
@@ -9,11 +10,22 @@
 // Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <iostream>
+#include <list>
+#include <vector>
+
 using namespace glm;
 
 Entity::Entity() :
-	position{ 0.0, 0.0, 0.0 }
+	position{ 0.0, 0.0, 0.0 },
+	indices(),
+	vertices(),
+	uvs(),
+	normals()
 {
+	if (!loadAssImp("Model//suzanne.obj", indices, vertices, uvs, normals))
+		throw int(1);
 }
 
 Entity::~Entity()
@@ -29,56 +41,16 @@ void Entity::SetPosition(float x, float y, float z)
 
 GLuint Entity::GetVertexBuffer()
 {
-	GLfloat g_vertex_buffer_data[] = {
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	 1.0f, 1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	 1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	 1.0f,-1.0f,-1.0f,
-	 1.0f, 1.0f,-1.0f,
-	 1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	 1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	 1.0f,-1.0f, 1.0f,
-	 1.0f, 1.0f, 1.0f,
-	 1.0f,-1.0f,-1.0f,
-	 1.0f, 1.0f,-1.0f,
-	 1.0f,-1.0f,-1.0f,
-	 1.0f, 1.0f, 1.0f,
-	 1.0f,-1.0f, 1.0f,
-	 1.0f, 1.0f, 1.0f,
-	 1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	 1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	 1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	 1.0f,-1.0f, 1.0f
-	};
-
-	for (int i = 0; i < 36 * 3; )
+	auto trans = glm::vec3(position[0], position[1], position[2]);
+	for (auto iter = vertices.begin(); iter != vertices.end(); iter++)
 	{
-		g_vertex_buffer_data[++i] += position[0];
-		g_vertex_buffer_data[++i] += position[1];
-		g_vertex_buffer_data[++i] += position[2];
+		iter->operator+=(trans);
 	}
 
 	GLuint vertexbuffer;
 	glGenBuffers(1, &vertexbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
 	return vertexbuffer;
 }
@@ -130,4 +102,29 @@ GLuint Entity::GetColorBuffer()
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
 
 	return colorbuffer;
+}
+
+GLuint Entity::GetTextureBuffer()
+{
+	GLuint uvbuffer;
+	glGenBuffers(1, &uvbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+	glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(glm::vec2), &uvs[0], GL_STATIC_DRAW);
+
+	return uvbuffer;
+}
+
+GLuint Entity::GetNormalBuffer()
+{
+	GLuint normalbuffer;
+	glGenBuffers(1, &normalbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
+	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+
+	return normalbuffer;
+}
+
+int Entity::GetDataSize() const
+{
+	return vertices.size();
 }

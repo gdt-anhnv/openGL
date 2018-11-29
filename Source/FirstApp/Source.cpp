@@ -13,6 +13,8 @@ GLFWwindow* window;
 using namespace glm;
 
 #include "common/shader.hpp"
+#include "common/texture.hpp"
+#include "common/controls.hpp"
 
 // Include standard headers
 #include <iostream>
@@ -25,10 +27,16 @@ struct EntBuffer
 {
 	GLuint vertex_buffer;
 	GLuint color_buffer;
+	GLuint texture_buffer;
+	GLuint normal_buffer;
+	int size;
 
-	EntBuffer(GLuint vb, GLuint cb) :
+	EntBuffer(GLuint vb, GLuint cb, GLuint tb, GLuint nb, int s) :
 		vertex_buffer(vb),
-		color_buffer(cb)
+		color_buffer(cb),
+		texture_buffer(tb),
+		normal_buffer(nb),
+		size(s)
 	{}
 };
 
@@ -83,10 +91,16 @@ int main(void)
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("TransformVertexShader.vertexshader", "ColorFragmentShader.fragmentshader");
+	GLuint programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 
 	// Get a handle for our "MVP" uniform
 	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+	GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
+	GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+
+	// Load the texture
+	GLuint Texture = loadDDS("Model\\uvmap.DDS");
+	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
 	// Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
 	glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
@@ -100,6 +114,8 @@ int main(void)
 	glm::mat4 Model = glm::mat4(1.0f);
 	// Our ModelViewProjection : multiplication of our 3 matrices
 	glm::mat4 MVP = Projection * View * Model; // Remember, matrix multiplication is the other way around
+
+	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
 	std::list<Entity*> ents = std::list<Entity*>();
 
@@ -117,7 +133,12 @@ int main(void)
 
 	std::list<EntBuffer> vertexbuffers;
 	for (auto iter = ents.begin(); iter != ents.end(); iter++)
-		vertexbuffers.push_back(EntBuffer((*iter)->GetVertexBuffer(), (*iter)->GetColorBuffer()));
+		vertexbuffers.push_back(
+			EntBuffer((*iter)->GetVertexBuffer(),
+				(*iter)->GetColorBuffer(),
+				(*iter)->GetTextureBuffer(),
+				(*iter)->GetNormalBuffer(),
+				(*iter)->GetDataSize()));
 
 	do {
 		// Clear the screen
@@ -125,6 +146,21 @@ int main(void)
 
 		// Use our shader
 		glUseProgram(programID);
+
+		computeMatricesFromInputs();
+		glm::mat4 ProjectionMatrix = getProjectionMatrix();
+		glm::mat4 ViewMatrix = getViewMatrix();
+		glm::mat4 ModelMatrix = glm::mat4(1.0);
+		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+
+		// Send our transformation to the currently bound shader, 
+// in the "MVP" uniform
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+		glm::vec3 lightPos = glm::vec3(4, 4, 4);
+		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
@@ -144,23 +180,39 @@ int main(void)
 				(void*)0            // array buffer offset
 			);
 
-			// 2nd attribute buffer : colors
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, Texture);
+			glUniform1i(TextureID, 0);
+
 			glEnableVertexAttribArray(1);
-			glBindBuffer(GL_ARRAY_BUFFER, iter->color_buffer);
+			glBindBuffer(GL_ARRAY_BUFFER, iter->texture_buffer);
 			glVertexAttribPointer(
 				1,                   // attribute. No particular reason for 1, but must match the layout in the shader.
-				3,                   // size
+				2,                   // size
 				GL_FLOAT,            // type
 				GL_FALSE,            // normalized?
 				0,                   // stride
 				(void*)0             // array buffer offset
 			);
+
+			glEnableVertexAttribArray(2);
+			glBindBuffer(GL_ARRAY_BUFFER, iter->normal_buffer);
+			glVertexAttribPointer(
+				2,                                // attribute
+				3,                                // size
+				GL_FLOAT,                         // type
+				GL_FALSE,                         // normalized?
+				0,                                // stride
+				(void*)0                          // array buffer offset
+			);
+
 			// Draw the triangle !
-			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles
+			glDrawArrays(GL_TRIANGLES, 0, iter->size);
 		}
 
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(2);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
@@ -175,6 +227,8 @@ int main(void)
 	{
 		glDeleteBuffers(1, &iter->vertex_buffer);
 		glDeleteBuffers(1, &iter->color_buffer);
+		glDeleteBuffers(1, &iter->texture_buffer);
+		glDeleteBuffers(1, &iter->normal_buffer);
 	}
 
 	glDeleteProgram(programID);

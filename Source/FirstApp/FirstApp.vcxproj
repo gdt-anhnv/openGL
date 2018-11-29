@@ -19,12 +19,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="common\controls.cpp" />
+    <ClCompile Include="common\objloader.cpp" />
     <ClCompile Include="common\shader.cpp" />
+    <ClCompile Include="common\texture.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\controls.hpp" />
+    <ClInclude Include="common\objloader.hpp" />
     <ClInclude Include="common\shader.hpp" />
+    <ClInclude Include="common\texture.hpp" />
     <ClInclude Include="display_opengl.h" />
     <ClInclude Include="entity.h" />
   </ItemGroup>
@@ -119,13 +125,14 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\glew-2.1.0\include;$(ProjectDir)..\..\glfw-master\include;$(ProjectDir)..\..\glm-0.9.9.3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\glew-2.1.0\include;$(ProjectDir)..\..\glfw-master\include;$(ProjectDir)..\..\glm-0.9.9.3;$(ProjectDir)..\..\assimp-4.1.0\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;USE_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw3.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\glew-2.1.0\lib\Release\x64;$(ProjectDir)..\..\glfw-master\Build\src\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\glew-2.1.0\lib\Release\x64;$(ProjectDir)..\..\glfw-master\Build\src\Release;$(ProjectDir)..\..\assimp-4.1.0\Build\code\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
