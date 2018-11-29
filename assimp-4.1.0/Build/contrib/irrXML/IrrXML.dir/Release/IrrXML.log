@@ -1,4 +1,0 @@
-﻿  Building Custom Rule D:/openGL/assimp-4.1.0/contrib/irrXML/CMakeLists.txt
-  CMake does not need to re-run because D:/openGL/assimp-4.1.0/Build/contrib/irrXML/CMakeFiles/generate.stamp is up-to-date.
-  irrXML.cpp
-  IrrXML.vcxproj -> D:\openGL\assimp-4.1.0\Build\contrib\irrXML\Release\IrrXML.lib
