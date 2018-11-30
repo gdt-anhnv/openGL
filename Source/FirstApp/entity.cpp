@@ -94,3 +94,28 @@ std::vector<int> Entity::GetDataSize() const
 		size.push_back(iter->size());
 	return size;
 }
+
+void Entity::GetExtremePoints(glm::vec3 & min, glm::vec3 & max) const
+{
+	min = vertices.front().front();
+	max = vertices.front().front();
+
+	for (auto iter = vertices.begin(); iter != vertices.end(); iter++)
+	{
+		for (auto sub_iter = iter->begin(); sub_iter != iter->end(); sub_iter++)
+		{
+			if (min.x > sub_iter->x)
+				min.x = sub_iter->x;
+			if (min.y > sub_iter->y)
+				min.y = sub_iter->y;
+			if (min.z > sub_iter->z)
+				min.z = sub_iter->z;
+			if (max.x < sub_iter->x)
+				max.x = sub_iter->x;
+			if (max.y < sub_iter->y)
+				max.y = sub_iter->y;
+			if (max.z < sub_iter->z)
+				max.z = sub_iter->z;
+		}
+	}
+}

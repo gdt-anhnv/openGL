@@ -2,14 +2,15 @@
 #define _ENTITY_H_
 
 // Include GLEW
-#include <GL/glew.h>
+#include "GL/glew.h"
 
 // Include GLFW
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 // Include GLM
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+using namespace glm;
 
 #include <iostream>
 #include <vector>
@@ -32,6 +33,7 @@ public:
 	std::vector<GLuint> GetNormalBuffer();
 
 	std::vector<int> GetDataSize() const;
+	void GetExtremePoints(glm::vec3& min, glm::vec3& max) const;
 };
 
 #endif

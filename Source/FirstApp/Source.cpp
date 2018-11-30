@@ -1,15 +1,15 @@
 #include "entity.h"
 
 // Include GLEW
-#include <GL/glew.h>
+#include "GL/glew.h"
 
 // Include GLFW
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 GLFWwindow* window;
 
 // Include GLM
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 using namespace glm;
 
 #include "common/shader.hpp"
@@ -117,6 +117,9 @@ int main(void)
 	}
 
 	std::list<EntBuffer> vertexbuffers;
+	glm::vec3 min = glm::vec3();
+	glm::vec3 max = glm::vec3();
+	ents.front()->GetExtremePoints(min, max);
 	for (auto iter = ents.begin(); iter != ents.end(); iter++)
 	{
 		auto vb = (*iter)->GetVertexBuffer();
@@ -127,7 +130,29 @@ int main(void)
 		{
 			vertexbuffers.push_back(EntBuffer(vb[i], tb[i], nb[i], sb[i]));
 		}
+
+		glm::vec3 sub_min = glm::vec3();
+		glm::vec3 sub_max = glm::vec3();
+		(*iter)->GetExtremePoints(sub_min, sub_max);
+		if (min.x > sub_min.x)
+			min.x = sub_min.x;
+		if (min.y > sub_min.y)
+			min.y = sub_min.y;
+		if (min.z > sub_min.z)
+			min.z = sub_min.z;
+		if (max.x < sub_max.x)
+			max.x = sub_max.x;
+		if (max.y < sub_max.y)
+			max.y = sub_max.y;
+		if (max.z < sub_max.z)
+			max.z = sub_max.z;
 	}
+
+	double length = glm::length(max - min);
+	glm::vec3 center = glm::vec3(
+		0.5 * (max.x + min.x),
+		0.5 * (max.y + min.x),
+		0.5 * (max.z + min.z));
 
 	do {
 		// Clear the screen
@@ -136,14 +161,17 @@ int main(void)
 		// Use our shader
 		glUseProgram(programID);
 
-		computeMatricesFromInputs();
-		glm::mat4 ProjectionMatrix = getProjectionMatrix();
-		glm::mat4 ViewMatrix = getViewMatrix();
+		//computeMatricesFromInputs();
+		//glm::mat4 ProjectionMatrix = getProjectionMatrix();
+		glm::mat4 ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+		//glm::mat4 ViewMatrix = getViewMatrix();
+		glm::mat4 ViewMatrix = glm::lookAt(
+			glm::vec3(center.x, center.y, center.z + length),
+			center,
+			glm::vec3(0.0, 1.0, 0.0));
 		glm::mat4 ModelMatrix = glm::mat4(1.0);
 		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
 
-		// Send our transformation to the currently bound shader, 
-// in the "MVP" uniform
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
