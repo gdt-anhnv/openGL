@@ -1,7 +1,7 @@
 ﻿  Source.cpp
-  Generating code
-  1 of 608 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  FirstApp.vcxproj -> D:\openGL\Source\FirstApp\x64\Release\FirstApp.exe
+  controls.cpp
+  objloader.cpp
+  texture.cpp
+  entity.cpp
+d:\opengl\source\firstapp\entity.cpp(129): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+LINK : fatal error LNK1181: cannot open input file 'assimp-vc140-mt.lib'

@@ -24,7 +24,7 @@ Entity::Entity() :
 	uvs(),
 	normals()
 {
-	if (!loadAssImp("Model//suzanne.obj", indices, vertices, uvs, normals))
+	if (!loadAssImp("Model//cow.obj", indices, vertices, uvs, normals))
 		throw int(1);
 }
 
