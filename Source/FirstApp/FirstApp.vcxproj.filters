@@ -36,12 +36,12 @@
     <ClCompile Include="common\controls.cpp">
       <Filter>Header Files\common</Filter>
     </ClCompile>
+    <ClCompile Include="camera_entity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="display_opengl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="common\shader.hpp">
@@ -55,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="common\controls.hpp">
       <Filter>Header Files\common</Filter>
+    </ClInclude>
+    <ClInclude Include="camera_entity.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

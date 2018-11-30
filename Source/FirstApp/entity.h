@@ -18,21 +18,20 @@ class Entity
 {
 private:
 	float position[3];
-	std::vector<unsigned short> indices;
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec2> uvs;
-	std::vector<glm::vec3> normals;
+	std::vector<std::vector<unsigned short>> indices;
+	std::vector<std::vector<glm::vec3>> vertices;
+	std::vector<std::vector<glm::vec2>> uvs;
+	std::vector< std::vector<glm::vec3>> normals;
 public:
 	Entity();
 	~Entity();
 
 	void SetPosition(float x, float y, float z);
-	GLuint GetVertexBuffer();
-	GLuint GetColorBuffer();
-	GLuint GetTextureBuffer();
-	GLuint GetNormalBuffer();
+	std::vector<GLuint> GetVertexBuffer();
+	std::vector<GLuint> GetTextureBuffer();
+	std::vector<GLuint> GetNormalBuffer();
 
-	int GetDataSize() const;
+	std::vector<int> GetDataSize() const;
 };
 
 #endif
