@@ -92,14 +92,12 @@ int main(void)
 	GLuint programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 
 	// Get a handle for our "MVP" uniform
-	GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 	GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
 	GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
 
 	// Load the texture
 	GLuint Texture = loadDDS("Model\\uvmap.DDS");
 	GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
-
 	GLuint LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
 
 	std::list<Entity*> ents = std::list<Entity*>();
@@ -154,6 +152,18 @@ int main(void)
 		0.5 * (max.y + min.x),
 		0.5 * (max.z + min.z));
 
+	GLuint mvp_matrix;
+	glGenBuffers(1, &mvp_matrix);
+
+	glm::mat4 ViewMatrix = glm::lookAt(
+		glm::vec3(center.x, center.y, center.z + length),
+		center,
+		glm::vec3(0.0, 1.0, 0.0));
+	glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+	glm::mat4 ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	glm::vec3 lightPos = glm::vec3(400, 400, 400);
+	glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+
 	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -161,32 +171,10 @@ int main(void)
 		// Use our shader
 		glUseProgram(programID);
 
-		//computeMatricesFromInputs();
-		//glm::mat4 ProjectionMatrix = getProjectionMatrix();
-		glm::mat4 ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-		//glm::mat4 ViewMatrix = getViewMatrix();
-		glm::mat4 ViewMatrix = glm::lookAt(
-			glm::vec3(center.x, center.y, center.z + length),
-			center,
-			glm::vec3(0.0, 1.0, 0.0));
-		glm::mat4 ModelMatrix = glm::mat4(1.0);
-		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
-
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
-
-		glm::vec3 lightPos = glm::vec3(400, 400, 400);
-		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
 		// 1rst attribute buffer : vertices
-		glEnableVertexAttribArray(0);
 		for (auto iter = vertexbuffers.begin(); iter != vertexbuffers.end(); iter++)
 		{
+			glEnableVertexAttribArray(0);
 			glBindBuffer(GL_ARRAY_BUFFER, iter->vertex_buffer);
 			glVertexAttribPointer(
 				0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
@@ -223,6 +211,30 @@ int main(void)
 				(void*)0                          // array buffer offset
 			);
 
+			int pos = glGetAttribLocation(programID, "MVP");
+			glEnableVertexAttribArray(pos);
+			glEnableVertexAttribArray(pos + 1);
+			glEnableVertexAttribArray(pos + 2);
+			glEnableVertexAttribArray(pos + 3);
+			glm::mat4 ModelMatrix = glm::mat4(1.0);
+			if (iter == vertexbuffers.begin())
+				ModelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(2.0));
+			else
+				ModelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(0.5));
+
+			glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+			glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+			glBindBuffer(GL_ARRAY_BUFFER, mvp_matrix);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 4, &MVP[0][0], GL_STATIC_DRAW);
+			glVertexAttribPointer(pos, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
+			glVertexAttribPointer(pos + 1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 4));
+			glVertexAttribPointer(pos + 2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 8));
+			glVertexAttribPointer(pos + 3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 12));
+			glVertexAttribDivisor(pos, 1);
+			glVertexAttribDivisor(pos + 1, 1);
+			glVertexAttribDivisor(pos + 2, 1);
+			glVertexAttribDivisor(pos + 3, 1);
+
 			// Draw the triangle !
 			glDrawArrays(GL_TRIANGLES, 0, iter->size);
 		}
@@ -230,7 +242,10 @@ int main(void)
 		glDisableVertexAttribArray(0);
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(2);
-
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(4);
+		glDisableVertexAttribArray(5);
+		glDisableVertexAttribArray(6);
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -252,6 +267,11 @@ int main(void)
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
+
+	for (auto iter = ents.begin(); iter != ents.end(); iter++)
+		delete *iter;
+
+	ents.clear();
 
 	return 0;
 }
