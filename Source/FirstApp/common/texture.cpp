@@ -210,7 +210,7 @@ GLuint loadDDS(const char * imagepath){
 
 	} 
 
-	free(buffer); 
+	free(buffer);
 
 	return textureID;
 

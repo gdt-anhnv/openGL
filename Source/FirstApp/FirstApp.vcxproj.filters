@@ -16,6 +16,9 @@
     <Filter Include="Header Files\common">
       <UniqueIdentifier>{1f5eee54-6dc7-4acb-be45-b8f4720b13a5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Programs">
+      <UniqueIdentifier>{4ce0b2fb-8b0d-40ea-9717-cd35106e816a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -39,6 +42,9 @@
     <ClCompile Include="camera_entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="basic_program.cpp">
+      <Filter>Header Files\Programs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity.h">
@@ -58,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="camera_entity.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="basic_program.h">
+      <Filter>Header Files\Programs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

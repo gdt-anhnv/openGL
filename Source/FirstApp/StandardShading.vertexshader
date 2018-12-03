@@ -1,4 +1,4 @@
-#version 460 core
+#version 330 core
 
 // Input vertex data, different for all executions of this shader.
 layout(location = 0) in vec3 vertexPosition_modelspace;
@@ -12,6 +12,7 @@ out vec3 Position_worldspace;
 out vec3 Normal_cameraspace;
 out vec3 EyeDirection_cameraspace;
 out vec3 LightDirection_cameraspace;
+out vec3 Testing;
 
 // Values that stay constant for the whole mesh.
 uniform mat4 V;
@@ -40,5 +41,6 @@ void main(){
 	
 	// UV of the vertex. No special space for this one.
 	UV = vertexUV;
+	Testing = vec3(V[0][0], V[0][1], V[0][2]);
 }
 

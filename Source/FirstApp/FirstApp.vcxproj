@@ -25,6 +25,7 @@
     <ClCompile Include="common\shader.cpp" />
     <ClCompile Include="common\texture.cpp" />
     <ClCompile Include="entity.cpp" />
+    <ClCompile Include="basic_program.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -34,6 +35,7 @@
     <ClInclude Include="common\texture.hpp" />
     <ClInclude Include="camera_entity.h" />
     <ClInclude Include="entity.h" />
+    <ClInclude Include="basic_program.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
