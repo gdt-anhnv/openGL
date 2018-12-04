@@ -1,5 +1,7 @@
 #include "basic_program.h"
 #include "common/texture.hpp"
+#include "settings.h"
+#include "DataStructures/singleton.h"
 
 // Include GLEW
 #include "GL/glew.h"
@@ -24,7 +26,8 @@ BasicProgram::BasicProgram(GLint pi) :
 	vertex_normal_id(-1),
 	vertex_array_id(-1),
 	texture(-1),
-	mvp_matrix(-1)
+	mvp_matrix(-1),
+	light_position{}
 {
 }
 
@@ -35,6 +38,13 @@ BasicProgram::~BasicProgram()
 void BasicProgram::AddEntity(const EntBuffer & eb)
 {
 	entities.push_back(eb);
+}
+
+void BasicProgram::SetLightPosition(GLfloat x, GLfloat y, GLfloat z)
+{
+	light_position[0] = x;
+	light_position[1] = y;
+	light_position[2] = z;
 }
 
 void BasicProgram::PreDrawing()
@@ -59,12 +69,11 @@ void BasicProgram::PreDrawing()
 
 }
 
-void BasicProgram::Draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix)
+void BasicProgram::Draw()
 {
 	glUseProgram(program_id);
-	glm::vec3 light_pos = glm::vec3(400.0f, 400.0f, 400.0f);
-	glUniform3f(light_id, light_pos.x, light_pos.y, light_pos.z);
-	glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, &view_matrix[0][0]);
+	glUniform3f(light_id, light_position[0], light_position[1], light_position[2]);
+	glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, &Singleton<Settings>::GetInstance()->view_matrix[0][0]);
 	glm::mat4 model_matrix = glm::mat4(1.0);
 	glUniformMatrix4fv(model_matrix_id, 1, GL_FALSE, &model_matrix[0][0]);
 
@@ -111,7 +120,8 @@ void BasicProgram::Draw(const glm::mat4& view_matrix, const glm::mat4& projectio
 		glEnableVertexAttribArray(mvp_id + 1);
 		glEnableVertexAttribArray(mvp_id + 2);
 		glEnableVertexAttribArray(mvp_id + 3);
-		glm::mat4 MVP = projection_matrix * view_matrix * model_matrix;
+		glm::mat4 MVP = Singleton<Settings>::GetInstance()->projection_matrix *
+			Singleton<Settings>::GetInstance()->view_matrix * model_matrix;
 		glBindBuffer(GL_ARRAY_BUFFER, mvp_matrix);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 4, &MVP[0][0], GL_STATIC_DRAW);
 		glVertexAttribPointer(mvp_id, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));

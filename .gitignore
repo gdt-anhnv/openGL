@@ -340,5 +340,6 @@ assimp*/
 glew*/
 glfw*/
 glm*/
+bullet*/
 *.log
 */.suo

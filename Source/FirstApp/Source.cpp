@@ -1,12 +1,13 @@
 #include "entity.h"
 #include "basic_program.h"
+#include "settings.h"
+#include "DataStructures/singleton.h"
 
 // Include GLEW
 #include "GL/glew.h"
 
 // Include GLFW
 #include "GLFW/glfw3.h"
-GLFWwindow* window;
 
 // Include GLM
 #include "glm/glm.hpp"
@@ -15,7 +16,6 @@ using namespace glm;
 
 #include "common/shader.hpp"
 #include "common/texture.hpp"
-#include "common/controls.hpp"
 
 // Include standard headers
 #include <iostream>
@@ -24,8 +24,21 @@ using namespace glm;
 #include <stdlib.h>
 
 
+void MouseEvent(GLFWwindow* window, int button, int action, int mods)
+{
+	if (GLFW_MOUSE_BUTTON_LEFT == button && GLFW_PRESS == action)
+	{
+		double xpos = 0.0;
+		double ypos = 0.0;
+		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window, &xpos, &ypos);
+		std::cout << xpos << " - " << ypos << std::endl;
+	}
+}
+
 int main(void)
 {
+	Singleton<Settings>::AssignInstance(new Settings());
+
 	// Initialise GLFW
 	if (!glfwInit())
 	{
@@ -41,14 +54,14 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(1024, 768, "Tutorial 04 - Colored Cube", NULL, NULL);
-	if (window == NULL) {
+	Singleton<Settings>::GetInstance()->window = glfwCreateWindow(1024, 768, "OpenGL", NULL, NULL);
+	if (NULL == Singleton<Settings>::GetInstance()->window) {
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		getchar();
 		glfwTerminate();
 		return -1;
 	}
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(Singleton<Settings>::GetInstance()->window);
 
 	// Initialize GLEW
 	glewExperimental = true; // Needed for core profile
@@ -59,8 +72,10 @@ int main(void)
 		return -1;
 	}
 
+	glfwSetMouseButtonCallback(Singleton<Settings>::GetInstance()->window, MouseEvent);
+
 	// Ensure we can capture the escape key being pressed below
-	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetInputMode(Singleton<Settings>::GetInstance()->window, GLFW_STICKY_KEYS, GL_TRUE);
 
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -71,7 +86,6 @@ int main(void)
 	glDepthFunc(GL_LESS);
 
 	// Create and compile our GLSL program from the shaders
-	GLuint program_id = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 
 	std::list<Entity*> ents = std::list<Entity*>();
 
@@ -125,34 +139,40 @@ int main(void)
 		0.5 * (max.y + min.x),
 		0.5 * (max.z + min.z));
 
-	glm::mat4 vm = glm::lookAt(
+	Singleton<Settings>::GetInstance()->view_matrix = glm::lookAt(
 		glm::vec3(center.x, center.y, center.z + length),
 		center,
 		glm::vec3(0.0, 1.0, 0.0));
 
-	glm::mat4 pm = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+	Singleton<Settings>::GetInstance()->projection_matrix =
+		glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
 
-	BasicProgram* bp = new BasicProgram(program_id);
-	for (auto iter = vertexbuffers.begin(); iter != vertexbuffers.end(); iter++)
-	{
-		bp->AddEntity(*iter);
-	}
+	BasicProgram* bp = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
+	bp->SetLightPosition(400.0f, 400.0f, 400.0f);
+	bp->AddEntity(vertexbuffers.front());
 
 	bp->PreDrawing();
+
+	BasicProgram* bp2 = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
+	bp2->SetLightPosition(-400.0f, 400.0f, 400.0f);
+	bp2->AddEntity(vertexbuffers.back());
+
+	bp2->PreDrawing();
 
 	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		bp->Draw(vm, pm);
+		bp->Draw();
+		bp2->Draw();
 
 		// Swap buffers
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(Singleton<Settings>::GetInstance()->window);
 		glfwPollEvents();
 
 	} // Check if the ESC key was pressed or the window was closed
-	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-		glfwWindowShouldClose(window) == 0);
+	while (glfwGetKey(Singleton<Settings>::GetInstance()->window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+		glfwWindowShouldClose(Singleton<Settings>::GetInstance()->window) == 0);
 
 	// Cleanup VBO and shader
 	for (auto iter = vertexbuffers.begin(); iter != vertexbuffers.end(); iter++)
@@ -163,6 +183,10 @@ int main(void)
 	}
 
 	bp->PostDrawing();
+	bp2->PostDrawing();
+
+	delete bp;
+	delete bp2;
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
@@ -171,6 +195,8 @@ int main(void)
 		delete *iter;
 
 	ents.clear();
+
+	Singleton<Settings>::destroy();
 
 	return 0;
 }

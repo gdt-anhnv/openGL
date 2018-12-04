@@ -57,14 +57,17 @@ private:
 	GLuint vertex_array_id;
 	GLuint texture;
 	GLuint mvp_matrix;
+
+	GLfloat light_position[3];
 public:
 	BasicProgram(GLint pi);
 	~BasicProgram();
 
 	void AddEntity(const EntBuffer&);
+	void SetLightPosition(GLfloat x, GLfloat y, GLfloat z);
 
 	void PreDrawing();
-	void Draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix);
+	void Draw();
 	void PostDrawing();
 };
 

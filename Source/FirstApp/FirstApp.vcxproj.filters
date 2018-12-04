@@ -19,6 +19,9 @@
     <Filter Include="Header Files\Programs">
       <UniqueIdentifier>{4ce0b2fb-8b0d-40ea-9717-cd35106e816a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\DataStructures">
+      <UniqueIdentifier>{3bbc5b76-5c14-49e8-afa0-200bb863f814}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -36,14 +39,14 @@
     <ClCompile Include="common\texture.cpp">
       <Filter>Header Files\common</Filter>
     </ClCompile>
-    <ClCompile Include="common\controls.cpp">
-      <Filter>Header Files\common</Filter>
-    </ClCompile>
     <ClCompile Include="camera_entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="basic_program.cpp">
       <Filter>Header Files\Programs</Filter>
+    </ClCompile>
+    <ClCompile Include="settings.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,14 +62,17 @@
     <ClInclude Include="common\texture.hpp">
       <Filter>Header Files\common</Filter>
     </ClInclude>
-    <ClInclude Include="common\controls.hpp">
-      <Filter>Header Files\common</Filter>
-    </ClInclude>
     <ClInclude Include="camera_entity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="basic_program.h">
       <Filter>Header Files\Programs</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructures\singleton.h">
+      <Filter>Header Files\DataStructures</Filter>
+    </ClInclude>
+    <ClInclude Include="settings.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
