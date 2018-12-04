@@ -1,4 +1,5 @@
 #include "entity.h"
+#include "basic_program.h"
 
 // Include GLEW
 #include "GL/glew.h"
@@ -69,15 +70,8 @@ int main(void)
 	// Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-
 	// Create and compile our GLSL program from the shaders
-	GLuint programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
-
-	// Load the texture
-	GLuint Texture = loadDDS("Model\\uvmap.DDS");
+	GLuint program_id = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 
 	std::list<Entity*> ents = std::list<Entity*>();
 
@@ -131,34 +125,27 @@ int main(void)
 		0.5 * (max.y + min.x),
 		0.5 * (max.z + min.z));
 
-	GLuint mvp_matrix;
-	glGenBuffers(1, &mvp_matrix);
-
-	glm::mat4 ProjectionMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-
-	// Use our shader
-	glUseProgram(programID);
-	glm::vec3 lightPos = glm::vec3(400.0f, 400.0f, 400.0f);
-	glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-	glm::mat4 ViewMatrix = glm::lookAt(
+	glm::mat4 vm = glm::lookAt(
 		glm::vec3(center.x, center.y, center.z + length),
 		center,
 		glm::vec3(0.0, 1.0, 0.0));
-	glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &ViewMatrix[0][0]);
+
+	glm::mat4 pm = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+
+	BasicProgram* bp = new BasicProgram(program_id);
+	for (auto iter = vertexbuffers.begin(); iter != vertexbuffers.end(); iter++)
+	{
+		bp->AddEntity(*iter);
+	}
+
+	bp->PreDrawing();
 
 	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// 1rst attribute buffer : vertices
+		bp->Draw(vm, pm);
 
-		glDisableVertexAttribArray(0);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(4);
-		glDisableVertexAttribArray(5);
-		glDisableVertexAttribArray(6);
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -175,8 +162,7 @@ int main(void)
 		glDeleteBuffers(1, &iter->normal_buffer);
 	}
 
-	glDeleteProgram(programID);
-	glDeleteVertexArrays(1, &VertexArrayID);
+	bp->PostDrawing();
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

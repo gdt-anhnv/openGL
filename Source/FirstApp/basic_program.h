@@ -29,12 +29,14 @@ struct EntBuffer
 		size(s)
 	{}
 
-	EntBuffer(EntBuffer&& ent) :
+	EntBuffer(const EntBuffer& ent) :
 		vertex_buffer(std::move(ent.vertex_buffer)),
 		texture_buffer(std::move(ent.texture_buffer)),
 		normal_buffer(std::move(ent.normal_buffer)),
 		size(ent.size)
 	{}
+
+	~EntBuffer() {}
 };
 
 class BasicProgram
@@ -48,7 +50,13 @@ private:
 	GLuint light_id;
 	GLuint view_matrix_id;
 	GLuint model_matrix_id;
-	GLuint mvp_location;
+	GLuint mvp_id;
+	GLuint vertex_position_id;
+	GLuint vertex_uv_id;
+	GLuint vertex_normal_id;
+	GLuint vertex_array_id;
+	GLuint texture;
+	GLuint mvp_matrix;
 public:
 	BasicProgram(GLint pi);
 	~BasicProgram();
@@ -56,7 +64,7 @@ public:
 	void AddEntity(const EntBuffer&);
 
 	void PreDrawing();
-	void Draw();
+	void Draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix);
 	void PostDrawing();
 };
 

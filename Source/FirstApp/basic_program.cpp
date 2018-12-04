@@ -1,4 +1,15 @@
 #include "basic_program.h"
+#include "common/texture.hpp"
+
+// Include GLEW
+#include "GL/glew.h"
+
+// Include GLFW
+#include "GLFW/glfw3.h"
+
+// Include GLM
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 BasicProgram::BasicProgram(GLint pi) :
 	program_id(pi),
@@ -7,7 +18,13 @@ BasicProgram::BasicProgram(GLint pi) :
 	light_id(-1),
 	view_matrix_id(-1),
 	model_matrix_id(-1),
-	mvp_location(-1)
+	mvp_id(-1),
+	vertex_position_id(-1),
+	vertex_uv_id(-1),
+	vertex_normal_id(-1),
+	vertex_array_id(-1),
+	texture(-1),
+	mvp_matrix(-1)
 {
 }
 
@@ -26,17 +43,37 @@ void BasicProgram::PreDrawing()
 	light_id = glGetUniformLocation(program_id, "LightPosition_worldspace");
 	view_matrix_id = glGetUniformLocation(program_id, "V");
 	model_matrix_id = glGetUniformLocation(program_id, "M");
-	mvp_location = glGetAttribLocation(program_id, "MVP");
+
+	mvp_id = glGetAttribLocation(program_id, "MVP");
+	vertex_position_id = glGetAttribLocation(program_id, "vertexPosition_modelspace");
+	vertex_uv_id = glGetAttribLocation(program_id, "vertexUV");
+	vertex_normal_id = glGetAttribLocation(program_id, "vertexNormal_modelspace");
+
+	glGenBuffers(1, &mvp_matrix);
+
+	glGenVertexArrays(1, &vertex_array_id);
+	glBindVertexArray(vertex_array_id);
+
+	// Load the texture
+	texture = loadDDS("Model\\uvmap.DDS");
+
 }
 
-void BasicProgram::Draw()
+void BasicProgram::Draw(const glm::mat4& view_matrix, const glm::mat4& projection_matrix)
 {
+	glUseProgram(program_id);
+	glm::vec3 light_pos = glm::vec3(400.0f, 400.0f, 400.0f);
+	glUniform3f(light_id, light_pos.x, light_pos.y, light_pos.z);
+	glUniformMatrix4fv(view_matrix_id, 1, GL_FALSE, &view_matrix[0][0]);
+	glm::mat4 model_matrix = glm::mat4(1.0);
+	glUniformMatrix4fv(model_matrix_id, 1, GL_FALSE, &model_matrix[0][0]);
+
 	for (auto iter = entities.begin(); iter != entities.end(); iter++)
 	{
-		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(vertex_position_id);
 		glBindBuffer(GL_ARRAY_BUFFER, iter->vertex_buffer);
 		glVertexAttribPointer(
-			0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+			vertex_position_id,    // attribute. No particular reason for 0, but must match the layout in the shader.
 			3,                  // size
 			GL_FLOAT,           // type
 			GL_FALSE,           // normalized?
@@ -45,13 +82,13 @@ void BasicProgram::Draw()
 		);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, Texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
 		glUniform1i(texture_id, 0);
 
-		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(vertex_uv_id);
 		glBindBuffer(GL_ARRAY_BUFFER, iter->texture_buffer);
 		glVertexAttribPointer(
-			1,                   // attribute. No particular reason for 1, but must match the layout in the shader.
+			vertex_uv_id,        // attribute. No particular reason for 1, but must match the layout in the shader.
 			2,                   // size
 			GL_FLOAT,            // type
 			GL_FALSE,            // normalized?
@@ -59,10 +96,10 @@ void BasicProgram::Draw()
 			(void*)0             // array buffer offset
 		);
 
-		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(vertex_normal_id);
 		glBindBuffer(GL_ARRAY_BUFFER, iter->normal_buffer);
 		glVertexAttribPointer(
-			2,                                // attribute
+			vertex_normal_id,                 // attribute
 			3,                                // size
 			GL_FLOAT,                         // type
 			GL_FALSE,                         // normalized?
@@ -70,36 +107,39 @@ void BasicProgram::Draw()
 			(void*)0                          // array buffer offset
 		);
 
-		int pos = glGetAttribLocation(program_id, "MVP");
-		glEnableVertexAttribArray(pos);
-		glEnableVertexAttribArray(pos + 1);
-		glEnableVertexAttribArray(pos + 2);
-		glEnableVertexAttribArray(pos + 3);
-		glm::mat4 ModelMatrix = glm::mat4(1.0);
-		if (iter == vertexbuffers.begin())
-			ModelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(2.0));
-		else
-			ModelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(0.5));
-
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-		glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
+		glEnableVertexAttribArray(mvp_id);
+		glEnableVertexAttribArray(mvp_id + 1);
+		glEnableVertexAttribArray(mvp_id + 2);
+		glEnableVertexAttribArray(mvp_id + 3);
+		glm::mat4 MVP = projection_matrix * view_matrix * model_matrix;
 		glBindBuffer(GL_ARRAY_BUFFER, mvp_matrix);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 4, &MVP[0][0], GL_STATIC_DRAW);
-		glVertexAttribPointer(pos, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
-		glVertexAttribPointer(pos + 1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 4));
-		glVertexAttribPointer(pos + 2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 8));
-		glVertexAttribPointer(pos + 3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 12));
-		glVertexAttribDivisor(pos, 1);
-		glVertexAttribDivisor(pos + 1, 1);
-		glVertexAttribDivisor(pos + 2, 1);
-		glVertexAttribDivisor(pos + 3, 1);
+		glVertexAttribPointer(mvp_id, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(0));
+		glVertexAttribPointer(mvp_id + 1, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 4));
+		glVertexAttribPointer(mvp_id + 2, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 8));
+		glVertexAttribPointer(mvp_id + 3, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 4 * 4, (void*)(sizeof(float) * 12));
+		glVertexAttribDivisor(mvp_id, 1);
+		glVertexAttribDivisor(mvp_id + 1, 1);
+		glVertexAttribDivisor(mvp_id + 2, 1);
+		glVertexAttribDivisor(mvp_id + 3, 1);
 
 		// Draw the triangle !
 		glDrawArrays(GL_TRIANGLES, 0, iter->size);
 	}
 
+	glDisableVertexAttribArray(vertex_position_id);
+	glDisableVertexAttribArray(vertex_uv_id);
+	glDisableVertexAttribArray(vertex_normal_id);
+	glDisableVertexAttribArray(mvp_id);
+	glDisableVertexAttribArray(mvp_id + 1);
+	glDisableVertexAttribArray(mvp_id + 2);
+	glDisableVertexAttribArray(mvp_id + 3);
+
 }
 
 void BasicProgram::PostDrawing()
 {
+	glDeleteProgram(program_id);
+	glDeleteVertexArrays(1, &vertex_array_id);
+
 }
