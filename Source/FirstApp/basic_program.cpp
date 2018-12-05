@@ -151,5 +151,4 @@ void BasicProgram::PostDrawing()
 {
 	glDeleteProgram(program_id);
 	glDeleteVertexArrays(1, &vertex_array_id);
-
 }

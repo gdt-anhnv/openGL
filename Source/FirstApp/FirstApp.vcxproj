@@ -23,6 +23,8 @@
     <ClCompile Include="common\objloader.cpp" />
     <ClCompile Include="common\shader.cpp" />
     <ClCompile Include="common\texture.cpp" />
+    <ClCompile Include="debug_draw.cpp" />
+    <ClCompile Include="draw_line_program.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="basic_program.cpp" />
     <ClCompile Include="picking_object.cpp" />
@@ -36,6 +38,8 @@
     <ClInclude Include="camera_entity.h" />
     <ClInclude Include="DataStructures\balanced_tree.h" />
     <ClInclude Include="DataStructures\singleton.h" />
+    <ClInclude Include="debug_draw.h" />
+    <ClInclude Include="draw_line_program.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="basic_program.h" />
     <ClInclude Include="picking_object.h" />

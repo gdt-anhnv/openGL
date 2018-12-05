@@ -37,6 +37,13 @@ void Entity::SetPosition(float x, float y, float z)
 	position[0] = x;
 	position[1] = y;
 	position[2] = z;
+
+	auto trans = glm::vec3(position[0], position[1], position[2]);
+	for (auto iter = vertices.begin(); iter != vertices.end(); iter++)
+	{
+		for (auto sub_iter = iter->begin(); sub_iter != iter->end(); sub_iter++)
+			sub_iter->operator+=(trans);
+	}
 }
 
 std::vector <GLuint> Entity::GetVertexBuffer()
@@ -45,8 +52,6 @@ std::vector <GLuint> Entity::GetVertexBuffer()
 	auto trans = glm::vec3(position[0], position[1], position[2]);
 	for (auto iter = vertices.begin(); iter != vertices.end(); iter++)
 	{
-		for (auto sub_iter = iter->begin(); sub_iter != iter->end(); sub_iter++)
-			sub_iter->operator+=(trans);
 		GLuint vertexbuffer;
 		glGenBuffers(1, &vertexbuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);

@@ -1,5 +1,6 @@
 #include "entity.h"
 #include "basic_program.h"
+#include "draw_line_program.h"
 #include "settings.h"
 #include "DataStructures/singleton.h"
 #include "picking_object.h"
@@ -86,6 +87,17 @@ void MouseEvent(GLFWwindow* window, int button, int action, int mods)
 	}
 }
 
+GLuint GetDLVertexBuffer(glm::vec3 pos1, glm::vec3 pos2)
+{
+	GLfloat vd[] = { pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z };
+	GLuint vertexbuffer;
+	glGenBuffers(1, &vertexbuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vd), &vd[0], GL_STATIC_DRAW);
+
+	return vertexbuffer;
+}
+
 int main(void)
 {
 	Singleton<Settings>::AssignInstance(new Settings());
@@ -156,6 +168,10 @@ int main(void)
 	glm::vec3 min = glm::vec3();
 	glm::vec3 max = glm::vec3();
 	ents.front()->GetExtremePoints(min, max);
+
+	glm::vec3 fp = glm::vec3();
+	glm::vec3 sp = glm::vec3();
+
 	for (auto iter = ents.begin(); iter != ents.end(); iter++)
 	{
 		auto vb = (*iter)->GetVertexBuffer();
@@ -170,6 +186,15 @@ int main(void)
 		glm::vec3 sub_min = glm::vec3();
 		glm::vec3 sub_max = glm::vec3();
 		(*iter)->GetExtremePoints(sub_min, sub_max);
+
+		if (iter == ents.begin())
+		{
+			fp = glm::vec3(0.5 * (sub_min.x + sub_max.x), 0.5 * (sub_min.y + sub_max.y), 0.5 * (sub_max.z + sub_min.z));
+		}
+		else
+		{
+			sp = glm::vec3(0.5 * (sub_min.x + sub_max.x), 0.5 * (sub_min.y + sub_max.y), 0.5 * (sub_max.z + sub_min.z));
+		}
 
 		if (min.x > sub_min.x)
 			min.x = sub_min.x;
@@ -190,6 +215,7 @@ int main(void)
 				sub_max.y - sub_min.y,
 				sub_max.z - sub_min.z));
 		btTransform trans = btTransform();
+
 		trans.setIdentity();
 		trans.setOrigin(btVector3(sub_min.x, sub_min.y, sub_min.z));
 		Singleton<Settings>::GetInstance()->picking_object_manager
@@ -203,7 +229,6 @@ int main(void)
 			->dynamic_world->addRigidBody(rb);
 		static int index = 10;
 		rb->setUserIndex(index++);
-
 	}
 
 	double length = glm::length(max - min);
@@ -224,14 +249,16 @@ int main(void)
 	BasicProgram* bp = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
 	bp->SetLightPosition(400.0f, 400.0f, 400.0f);
 	bp->AddEntity(vertexbuffers.front());
-
 	bp->PreDrawing();
 
 	BasicProgram* bp2 = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
 	bp2->SetLightPosition(-400.0f, 400.0f, 400.0f);
 	bp2->AddEntity(vertexbuffers.back());
-
 	bp2->PreDrawing();
+
+	DrawLineProgram* dlp = new DrawLineProgram(LoadShaders("DrawLine.vertexshader", "DrawLine.fragmentshader"));
+	dlp->AddDLEntity(DLEntBuffer(GetDLVertexBuffer(sp, fp) , 2));
+	dlp->PreDrawing();
 
 	do {
 		// Clear the screen
@@ -239,6 +266,10 @@ int main(void)
 
 		bp->Draw();
 		bp2->Draw();
+
+		Singleton<Settings>::GetInstance()->picking_object_manager->dynamic_world->debugDrawWorld();
+
+		dlp->Draw();
 
 		// Swap buffers
 		glfwSwapBuffers(Singleton<Settings>::GetInstance()->window);
@@ -258,9 +289,11 @@ int main(void)
 
 	bp->PostDrawing();
 	bp2->PostDrawing();
+	dlp->PostDrawing();
 
 	delete bp;
 	delete bp2;
+	delete dlp;
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();

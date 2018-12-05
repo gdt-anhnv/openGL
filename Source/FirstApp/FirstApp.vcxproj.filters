@@ -51,6 +51,12 @@
     <ClCompile Include="picking_object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="debug_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="draw_line_program.cpp">
+      <Filter>Header Files\Programs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity.h">
@@ -82,6 +88,12 @@
     </ClInclude>
     <ClInclude Include="picking_object.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debug_draw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="draw_line_program.h">
+      <Filter>Header Files\Programs</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

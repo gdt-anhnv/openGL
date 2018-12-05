@@ -1,4 +1,5 @@
 #include "picking_object.h"
+#include "debug_draw.h"
 
 #include "btBulletDynamicsCommon.h"
 #include "btBulletCollisionCommon.h"
@@ -18,6 +19,10 @@ PickingObject::PickingObject() :
 	solver = new btSequentialImpulseConstraintSolver();
 
 	dynamic_world = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collision_configuration);
+
+	//set debug draw
+	dynamic_world->setDebugDrawer(new MyDebugDraw);
+	dynamic_world->getDebugDrawer()->setDebugMode(btIDebugDraw::DBG_DrawAabb + btIDebugDraw::DBG_DrawWireframe);
 }
 
 PickingObject::~PickingObject()
