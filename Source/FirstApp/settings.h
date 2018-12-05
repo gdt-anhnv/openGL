@@ -12,20 +12,19 @@
 #include "glm/gtc/matrix_transform.hpp"
 using namespace glm;
 
+class PickingObject;
 class Settings
 {
 public:
+	glm::vec3 view_position;
 	glm::mat4 view_matrix;
 	glm::mat4 projection_matrix;
 	GLFWwindow* window;
+	PickingObject* picking_object_manager;
 
-	Settings() :
-		view_matrix(glm::mat4(1.0f)),
-		projection_matrix(glm::mat4(1.0f)),
-		window(nullptr)
-	{}
+	Settings();
 
-	~Settings() {}
+	~Settings();
 };
 
 #endif

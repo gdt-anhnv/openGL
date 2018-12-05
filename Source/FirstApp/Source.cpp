@@ -2,6 +2,7 @@
 #include "basic_program.h"
 #include "settings.h"
 #include "DataStructures/singleton.h"
+#include "picking_object.h"
 
 // Include GLEW
 #include "GL/glew.h"
@@ -16,6 +17,10 @@ using namespace glm;
 
 #include "common/shader.hpp"
 #include "common/texture.hpp"
+
+//bullet engine
+#include "btBulletDynamicsCommon.h"
+#include "btBulletCollisionCommon.h"
 
 // Include standard headers
 #include <iostream>
@@ -32,6 +37,52 @@ void MouseEvent(GLFWwindow* window, int button, int action, int mods)
 		double ypos = 0.0;
 		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window, &xpos, &ypos);
 		std::cout << xpos << " - " << ypos << std::endl;
+
+		int width = 0;
+		int height = 0;
+		glfwGetWindowSize(Singleton<Settings>::GetInstance()->window, &width, &height);
+
+		glm::vec4 ray_start = glm::vec4(
+			((float)xpos / (float)width - 0.5f) * 2.0f,
+			((float)ypos / (float)height - 0.5f) * 2.0f,
+			-1.0f, 1.0f);
+		glm::vec4 ray_end = glm::vec4(
+			((float)xpos / (float)width - 0.5f) * 2.0f,
+			((float)ypos / (float)height - 0.5f) * 2.0f,
+			0.0f, 1.0f);
+
+		glm::mat4 inverse_proj = glm::inverse(Singleton<Settings>::GetInstance()->projection_matrix);
+		glm::mat4 inverse_view = glm::inverse(Singleton<Settings>::GetInstance()->view_matrix);
+
+		glm::vec4 ray_start_cam = inverse_proj * ray_start;
+		ray_start_cam /= ray_start_cam.w;
+		glm::vec4 ray_start_world = inverse_view * ray_start_cam;
+		ray_start_world /= ray_start_world.w;
+		glm::vec4 ray_end_cam = inverse_proj * ray_end;
+		ray_end_cam /= ray_end_cam.w;
+		glm::vec4 ray_end_world = inverse_view * ray_end_cam;
+		ray_end_world /= ray_end_world.w;
+
+		glm::vec3 ray_dir_world(ray_end_world - ray_start_world);
+		ray_dir_world = glm::normalize(ray_dir_world);
+
+		glm::vec3 vp = Singleton<Settings>::GetInstance()->view_position;
+		glm::vec3 out_end = vp + ray_dir_world * 1000.0f;
+
+		btCollisionWorld::ClosestRayResultCallback RayCallback(
+			btVector3(vp.x, vp.y, vp.z),
+			btVector3(out_end.x, out_end.y, out_end.z));
+		Singleton<Settings>::GetInstance()->picking_object_manager->dynamic_world->rayTest(
+			btVector3(vp.x, vp.y, vp.z),
+			btVector3(out_end.x, out_end.y, out_end.z),
+			RayCallback);
+
+		if (RayCallback.hasHit()) {
+			std::cout << (int)RayCallback.m_collisionObject->getUserIndex() << std::endl;
+		}
+		else {
+			std::cout << "background" << std::endl;
+		}
 	}
 }
 
@@ -119,6 +170,7 @@ int main(void)
 		glm::vec3 sub_min = glm::vec3();
 		glm::vec3 sub_max = glm::vec3();
 		(*iter)->GetExtremePoints(sub_min, sub_max);
+
 		if (min.x > sub_min.x)
 			min.x = sub_min.x;
 		if (min.y > sub_min.y)
@@ -131,6 +183,27 @@ int main(void)
 			max.y = sub_max.y;
 		if (max.z < sub_max.z)
 			max.z = sub_max.z;
+
+		btCollisionShape* shape = new btBoxShape(
+			btVector3(
+				sub_max.x - sub_min.x,
+				sub_max.y - sub_min.y,
+				sub_max.z - sub_min.z));
+		btTransform trans = btTransform();
+		trans.setIdentity();
+		trans.setOrigin(btVector3(sub_min.x, sub_min.y, sub_min.z));
+		Singleton<Settings>::GetInstance()->picking_object_manager
+			->collision_shapes->push_back(shape);
+		btDefaultMotionState* motion_state = new btDefaultMotionState(trans);
+		btScalar mass(0.);
+		btRigidBody::btRigidBodyConstructionInfo rb_info(mass, motion_state, shape);
+
+		btRigidBody* rb = new btRigidBody(rb_info);
+		Singleton<Settings>::GetInstance()->picking_object_manager
+			->dynamic_world->addRigidBody(rb);
+		static int index = 10;
+		rb->setUserIndex(index++);
+
 	}
 
 	double length = glm::length(max - min);
@@ -139,6 +212,7 @@ int main(void)
 		0.5 * (max.y + min.x),
 		0.5 * (max.z + min.z));
 
+	Singleton<Settings>::GetInstance()->view_position = glm::vec3(center.x, center.y, center.z + length);
 	Singleton<Settings>::GetInstance()->view_matrix = glm::lookAt(
 		glm::vec3(center.x, center.y, center.z + length),
 		center,

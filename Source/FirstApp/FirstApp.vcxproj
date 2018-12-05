@@ -25,6 +25,7 @@
     <ClCompile Include="common\texture.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="basic_program.cpp" />
+    <ClCompile Include="picking_object.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
@@ -33,9 +34,11 @@
     <ClInclude Include="common\shader.hpp" />
     <ClInclude Include="common\texture.hpp" />
     <ClInclude Include="camera_entity.h" />
+    <ClInclude Include="DataStructures\balanced_tree.h" />
     <ClInclude Include="DataStructures\singleton.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="basic_program.h" />
+    <ClInclude Include="picking_object.h" />
     <ClInclude Include="settings.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -129,14 +132,15 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\glew-2.1.0\include;$(ProjectDir)..\..\glfw-master\include;$(ProjectDir)..\..\glm-0.9.9.3;$(ProjectDir)..\..\assimp-4.1.0\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\glew-2.1.0\include;$(ProjectDir)..\..\glfw-master\include;$(ProjectDir)..\..\glm-0.9.9.3;$(ProjectDir)..\..\assimp-4.1.0\include\;$(ProjectDir)..\..\bullet3-master\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;USE_ASSIMP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\glew-2.1.0\lib\Release\x64;$(ProjectDir)..\..\glfw-master\Build\src\Release;$(ProjectDir)..\..\assimp-4.1.0\Build\code\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;glfw3.lib;glew32.lib;assimp-vc140-mt.lib;BulletDynamics.lib;BulletCollision.lib;LinearMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\glew-2.1.0\lib\Release\x64;$(ProjectDir)..\..\glfw-master\Build\src\Release;$(ProjectDir)..\..\assimp-4.1.0\Build\code\Release;$(ProjectDir)..\..\bullet3-master\Build\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
