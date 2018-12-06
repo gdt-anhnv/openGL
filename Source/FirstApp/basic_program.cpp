@@ -149,6 +149,19 @@ void BasicProgram::Draw()
 
 void BasicProgram::PostDrawing()
 {
+	ClearBuffer();
 	glDeleteProgram(program_id);
 	glDeleteVertexArrays(1, &vertex_array_id);
+}
+
+void BasicProgram::ClearBuffer()
+{
+	for (auto iter = entities.begin(); iter != entities.end(); iter++)
+	{
+		glDeleteBuffers(1, &iter->vertex_buffer);
+		glDeleteBuffers(1, &iter->texture_buffer);
+		glDeleteBuffers(1, &iter->normal_buffer);
+	}
+
+	entities.clear();
 }

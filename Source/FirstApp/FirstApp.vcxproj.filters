@@ -57,6 +57,9 @@
     <ClCompile Include="draw_line_program.cpp">
       <Filter>Header Files\Programs</Filter>
     </ClCompile>
+    <ClCompile Include="global_vars.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity.h">
@@ -94,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="draw_line_program.h">
       <Filter>Header Files\Programs</Filter>
+    </ClInclude>
+    <ClInclude Include="global_vars.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

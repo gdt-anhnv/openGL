@@ -69,6 +69,8 @@ public:
 	void PreDrawing();
 	void Draw();
 	void PostDrawing();
+
+	void ClearBuffer();
 };
 
 #endif

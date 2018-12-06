@@ -88,6 +88,15 @@ void DrawLineProgram::Draw()
 
 void DrawLineProgram::PostDrawing()
 {
+	ClearBuffer();
 	glDeleteProgram(program_id);
 	glDeleteVertexArrays(1, &vertex_array_id);
+}
+
+void DrawLineProgram::ClearBuffer()
+{
+	for (auto iter = entities.begin(); iter != entities.end(); iter++)
+		glDeleteBuffers(1, &iter->vertex_buffer);
+
+	entities.clear();
 }

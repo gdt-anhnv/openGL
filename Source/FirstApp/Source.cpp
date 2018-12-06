@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "DataStructures/singleton.h"
 #include "picking_object.h"
+#include "global_vars.h"
 
 // Include GLEW
 #include "GL/glew.h"
@@ -87,17 +88,6 @@ void MouseEvent(GLFWwindow* window, int button, int action, int mods)
 	}
 }
 
-GLuint GetDLVertexBuffer(glm::vec3 pos1, glm::vec3 pos2)
-{
-	GLfloat vd[] = { pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z };
-	GLuint vertexbuffer;
-	glGenBuffers(1, &vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vd), &vd[0], GL_STATIC_DRAW);
-
-	return vertexbuffer;
-}
-
 int main(void)
 {
 	Singleton<Settings>::AssignInstance(new Settings());
@@ -164,13 +154,16 @@ int main(void)
 		ents.push_back(entity);
 	}
 
+	{
+		Entity* entity = new Entity();
+		entity->SetPosition(0.0, 3.0, 0.0);
+		ents.push_back(entity);
+	}
+
 	std::list<EntBuffer> vertexbuffers;
 	glm::vec3 min = glm::vec3();
 	glm::vec3 max = glm::vec3();
 	ents.front()->GetExtremePoints(min, max);
-
-	glm::vec3 fp = glm::vec3();
-	glm::vec3 sp = glm::vec3();
 
 	for (auto iter = ents.begin(); iter != ents.end(); iter++)
 	{
@@ -187,15 +180,6 @@ int main(void)
 		glm::vec3 sub_max = glm::vec3();
 		(*iter)->GetExtremePoints(sub_min, sub_max);
 
-		if (iter == ents.begin())
-		{
-			fp = glm::vec3(0.5 * (sub_min.x + sub_max.x), 0.5 * (sub_min.y + sub_max.y), 0.5 * (sub_max.z + sub_min.z));
-		}
-		else
-		{
-			sp = glm::vec3(0.5 * (sub_min.x + sub_max.x), 0.5 * (sub_min.y + sub_max.y), 0.5 * (sub_max.z + sub_min.z));
-		}
-
 		if (min.x > sub_min.x)
 			min.x = sub_min.x;
 		if (min.y > sub_min.y)
@@ -211,13 +195,16 @@ int main(void)
 
 		btCollisionShape* shape = new btBoxShape(
 			btVector3(
-				sub_max.x - sub_min.x,
-				sub_max.y - sub_min.y,
-				sub_max.z - sub_min.z));
+				0.5 * (sub_max.x - sub_min.x),
+				0.5 * (sub_max.y - sub_min.y),
+				0.5 * (sub_max.z - sub_min.z)));
 		btTransform trans = btTransform();
 
 		trans.setIdentity();
-		trans.setOrigin(btVector3(sub_min.x, sub_min.y, sub_min.z));
+		trans.setOrigin(btVector3(
+			0.5 * (sub_min.x + sub_max.x),
+			0.5 * (sub_min.y + sub_max.y),
+			0.5 * (sub_min.z + sub_max.z)));
 		Singleton<Settings>::GetInstance()->picking_object_manager
 			->collision_shapes->push_back(shape);
 		btDefaultMotionState* motion_state = new btDefaultMotionState(trans);
@@ -234,7 +221,7 @@ int main(void)
 	double length = glm::length(max - min);
 	glm::vec3 center = glm::vec3(
 		0.5 * (max.x + min.x),
-		0.5 * (max.y + min.x),
+		0.5 * (max.y + min.y),
 		0.5 * (max.z + min.z));
 
 	Singleton<Settings>::GetInstance()->view_position = glm::vec3(center.x, center.y, center.z + length);
@@ -248,28 +235,24 @@ int main(void)
 
 	BasicProgram* bp = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
 	bp->SetLightPosition(400.0f, 400.0f, 400.0f);
-	bp->AddEntity(vertexbuffers.front());
-	bp->PreDrawing();
 
-	BasicProgram* bp2 = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
-	bp2->SetLightPosition(-400.0f, 400.0f, 400.0f);
-	bp2->AddEntity(vertexbuffers.back());
-	bp2->PreDrawing();
+	for (auto iter = vertexbuffers.begin(); iter != vertexbuffers.end(); iter++)
+	{
+		bp->AddEntity(*iter);
+		bp->PreDrawing();
+	}
 
-	DrawLineProgram* dlp = new DrawLineProgram(LoadShaders("DrawLine.vertexshader", "DrawLine.fragmentshader"));
-	dlp->AddDLEntity(DLEntBuffer(GetDLVertexBuffer(sp, fp) , 2));
-	dlp->PreDrawing();
+	Singleton<GlobalVars>::AssignInstance(new GlobalVars());
+	Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->PreDrawing();
 
+	Singleton<Settings>::GetInstance()->picking_object_manager->dynamic_world->debugDrawWorld();
 	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		bp->Draw();
-		bp2->Draw();
 
-		Singleton<Settings>::GetInstance()->picking_object_manager->dynamic_world->debugDrawWorld();
-
-		dlp->Draw();
+		Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->Draw();
 
 		// Swap buffers
 		glfwSwapBuffers(Singleton<Settings>::GetInstance()->window);
@@ -277,23 +260,12 @@ int main(void)
 
 	} // Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(Singleton<Settings>::GetInstance()->window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-		glfwWindowShouldClose(Singleton<Settings>::GetInstance()->window) == 0);
-
-	// Cleanup VBO and shader
-	for (auto iter = vertexbuffers.begin(); iter != vertexbuffers.end(); iter++)
-	{
-		glDeleteBuffers(1, &iter->vertex_buffer);
-		glDeleteBuffers(1, &iter->texture_buffer);
-		glDeleteBuffers(1, &iter->normal_buffer);
-	}
+		0 == glfwWindowShouldClose(Singleton<Settings>::GetInstance()->window));
 
 	bp->PostDrawing();
-	bp2->PostDrawing();
-	dlp->PostDrawing();
+	Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->PostDrawing();
 
 	delete bp;
-	delete bp2;
-	delete dlp;
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
@@ -304,6 +276,7 @@ int main(void)
 	ents.clear();
 
 	Singleton<Settings>::destroy();
+	Singleton<GlobalVars>::destroy();
 
 	return 0;
 }

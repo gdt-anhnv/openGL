@@ -27,6 +27,7 @@
     <ClCompile Include="draw_line_program.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="basic_program.cpp" />
+    <ClCompile Include="global_vars.cpp" />
     <ClCompile Include="picking_object.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -42,6 +43,7 @@
     <ClInclude Include="draw_line_program.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="basic_program.h" />
+    <ClInclude Include="global_vars.h" />
     <ClInclude Include="picking_object.h" />
     <ClInclude Include="settings.h" />
   </ItemGroup>

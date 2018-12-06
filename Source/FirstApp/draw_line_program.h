@@ -33,8 +33,6 @@ struct DLEntBuffer
 	~DLEntBuffer() {}
 };
 
-
-
 class DrawLineProgram
 {
 private:
@@ -54,6 +52,8 @@ public:
 	void PreDrawing();
 	void Draw();
 	void PostDrawing();
+
+	void ClearBuffer();
 };
 
 #endif
