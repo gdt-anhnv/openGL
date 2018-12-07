@@ -5,6 +5,7 @@
 #include "DataStructures/singleton.h"
 #include "picking_object.h"
 #include "global_vars.h"
+#include "camera_entity.h"
 
 // Include GLEW
 #include "GL/glew.h"
@@ -35,22 +36,29 @@ void MouseEvent(GLFWwindow* window, int button, int action, int mods)
 {
 	if (GLFW_MOUSE_BUTTON_LEFT == button && GLFW_PRESS == action)
 	{
+		Singleton<GlobalVars>::GetInstance()->is_mouse_pressed = true;
 		double xpos = 0.0;
 		double ypos = 0.0;
 		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window, &xpos, &ypos);
 		std::cout << xpos << " - " << ypos << std::endl;
+
+		{
+			CameraEntity* cam_ent = Singleton<GlobalVars>::GetInstance()->camera_entity;
+			cam_ent->mouse_position[0] = xpos;
+			cam_ent->mouse_position[1] = ypos;
+		}
 
 		int width = 0;
 		int height = 0;
 		glfwGetWindowSize(Singleton<Settings>::GetInstance()->window, &width, &height);
 
 		glm::vec4 ray_start = glm::vec4(
-			((float)xpos / (float)width - 0.5f) * 2.0f,
-			((float)ypos / (float)height - 0.5f) * 2.0f,
+			(xpos / (float)width - 0.5f) * 2.0f,
+			(ypos / (float)height - 0.5f) * 2.0f,
 			-1.0f, 1.0f);
 		glm::vec4 ray_end = glm::vec4(
-			((float)xpos / (float)width - 0.5f) * 2.0f,
-			((float)ypos / (float)height - 0.5f) * 2.0f,
+			(xpos / (float)width - 0.5f) * 2.0f,
+			(ypos / (float)height - 0.5f) * 2.0f,
 			0.0f, 1.0f);
 
 		glm::mat4 inverse_proj = glm::inverse(Singleton<Settings>::GetInstance()->projection_matrix);
@@ -86,6 +94,13 @@ void MouseEvent(GLFWwindow* window, int button, int action, int mods)
 			std::cout << "background" << std::endl;
 		}
 	}
+	else if (GLFW_MOUSE_BUTTON_LEFT == button && GLFW_RELEASE == action)
+	{
+		Singleton<GlobalVars>::GetInstance()->is_mouse_pressed = false;
+	}
+
+	if (Singleton<GlobalVars>::GetInstance()->is_mouse_pressed)
+		std::cout << "mouse is pressing!" << std::endl;
 }
 
 int main(void)
@@ -224,14 +239,20 @@ int main(void)
 		0.5 * (max.y + min.y),
 		0.5 * (max.z + min.z));
 
-	Singleton<Settings>::GetInstance()->view_position = glm::vec3(center.x, center.y, center.z + length);
-	Singleton<Settings>::GetInstance()->view_matrix = glm::lookAt(
-		glm::vec3(center.x, center.y, center.z + length),
-		center,
-		glm::vec3(0.0, 1.0, 0.0));
-
 	Singleton<Settings>::GetInstance()->projection_matrix =
 		glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+
+	Singleton<GlobalVars>::AssignInstance(new GlobalVars());
+	CameraEntity* cam_ent = Singleton<GlobalVars>::GetInstance()->camera_entity;
+		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window,
+			&cam_ent->mouse_position[0], &cam_ent->mouse_position[1]);
+
+	cam_ent->SetViewAt(center.x, center.y, center.z);
+	cam_ent->SetPosition(center.x, center.y, center.z + length);
+	cam_ent->SetUpDir(0.0, 1.0, 0.0);
+	cam_ent->SetDirection(0.0, 0.0, 1.0);
+	Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
+	Singleton<Settings>::GetInstance()->view_position = glm::vec3(center.x, center.y, center.z + length);
 
 	BasicProgram* bp = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
 	bp->SetLightPosition(400.0f, 400.0f, 400.0f);
@@ -241,17 +262,24 @@ int main(void)
 		bp->AddEntity(*iter);
 		bp->PreDrawing();
 	}
-
-	Singleton<GlobalVars>::AssignInstance(new GlobalVars());
+	
 	Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->PreDrawing();
-
 	Singleton<Settings>::GetInstance()->picking_object_manager->dynamic_world->debugDrawWorld();
 	do {
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		bp->Draw();
+		//update mouse position
+		if(Singleton<GlobalVars>::GetInstance()->is_mouse_pressed)
+		{
+			double xpos = 0.0;
+			double ypos = 0.0;
+			glfwGetCursorPos(Singleton<Settings>::GetInstance()->window, &xpos, &ypos);
+			cam_ent->UpdateMousePos(xpos, ypos);
+			Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
+		}
 
+		bp->Draw();
 		Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->Draw();
 
 		// Swap buffers

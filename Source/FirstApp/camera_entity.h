@@ -11,6 +11,10 @@ private:
 	float position[3];
 	float direction[3];
 	float up[3];
+	float view_at[3];
+
+public:
+	double mouse_position[2];
 public:
 	CameraEntity();
 	~CameraEntity();
@@ -18,8 +22,10 @@ public:
 	void SetPosition(float x, float y, float z);
 	void SetDirection(float x, float y, float z);
 	void SetUpDir(float x, float y, float z);
+	void SetViewAt(float x, float y, float z);
 
 	glm::mat4 GetViewMatrix();
+	void UpdateMousePos(double x, double y);
 };
 
 #endif
