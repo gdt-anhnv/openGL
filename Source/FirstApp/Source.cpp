@@ -247,10 +247,13 @@ int main(void)
 		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window,
 			&cam_ent->mouse_position[0], &cam_ent->mouse_position[1]);
 
-	cam_ent->SetViewAt(center.x, center.y, center.z);
-	cam_ent->SetPosition(center.x, center.y, center.z + length);
-	cam_ent->SetUpDir(0.0, 1.0, 0.0);
-	cam_ent->SetDirection(0.0, 0.0, 1.0);
+	//cam_ent->SetViewAt(0.0f, 0.0f, 0.0f);
+	cam_ent->SetPosition(0.0f, 0.0f, 8.0f);
+	float dir_vec[3] = { 0.0, 0.0, -1.0 };
+	float up_vec[3] = { 0.0, 1.0, 0.0 };
+	cam_ent->InitOrientation(dir_vec, up_vec);
+	//cam_ent->SetUpDir(0.0, 1.0, 0.0);
+	//cam_ent->SetDirection(0.0, 0.0, 1.0);
 	Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
 	Singleton<Settings>::GetInstance()->view_position = glm::vec3(center.x, center.y, center.z + length);
 

@@ -60,6 +60,9 @@
     <ClCompile Include="global_vars.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="orientation_quat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="entity.h">
@@ -99,6 +102,9 @@
       <Filter>Header Files\Programs</Filter>
     </ClInclude>
     <ClInclude Include="global_vars.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="orientation_quat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

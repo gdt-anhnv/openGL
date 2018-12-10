@@ -28,6 +28,7 @@
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="basic_program.cpp" />
     <ClCompile Include="global_vars.cpp" />
+    <ClCompile Include="orientation_quat.cpp" />
     <ClCompile Include="picking_object.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -44,6 +45,7 @@
     <ClInclude Include="entity.h" />
     <ClInclude Include="basic_program.h" />
     <ClInclude Include="global_vars.h" />
+    <ClInclude Include="orientation_quat.h" />
     <ClInclude Include="picking_object.h" />
     <ClInclude Include="settings.h" />
   </ItemGroup>
