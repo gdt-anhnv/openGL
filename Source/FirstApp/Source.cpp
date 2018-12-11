@@ -205,8 +205,8 @@ int main(void)
 		Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
 		cam_ent->RotateCam();
 
-		bp->Draw();
 		Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->Draw();
+		bp->Draw();
 
 		// Swap buffers
 		glfwSwapBuffers(Singleton<Settings>::GetInstance()->window);

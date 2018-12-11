@@ -41,6 +41,6 @@ void main(){
 	
 	// UV of the vertex. No special space for this one.
 	UV = vertexUV;
-	Testing = vec3(V[0][0], V[0][1], V[0][2]);
+	Testing = vec3(1.0, 1.0, 1.0);
 }
 

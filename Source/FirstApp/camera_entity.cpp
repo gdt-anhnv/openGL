@@ -90,7 +90,7 @@ void CameraEntity::RotateCam()
 
 	glm::mat4 mat_view = GetViewMatrix();
 	position[0] = mat_view[2][0] * 18.0f;
-	position[1] = mat_view[2][1] * 18.0f;
+	position[1] = -mat_view[2][1] * 18.0f;
 	position[2] = mat_view[2][2] * 18.0f;
 
 	glm::vec3 vec = glm::vec3(position[0], position[1], position[2]);
