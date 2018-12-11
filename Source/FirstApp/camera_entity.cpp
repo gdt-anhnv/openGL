@@ -3,6 +3,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 
+#include <iostream>
+
 CameraEntity::CameraEntity() :
 	position{},
 	//direction{},
@@ -45,19 +47,14 @@ void CameraEntity::SetViewAt(float x, float y, float z)
 	view_at[2] = z;
 }
 
-void CameraEntity::InitOrientation(float * direction, float * up)
+void CameraEntity::InitOrientation(float * up)
 {
-	glm::vec3 oz = glm::vec3(direction[0], direction[1], direction[2]);
-	glm::vec3 oy = glm::vec3(up[0], up[1], up[2]);
+	glm::mat4 mat = glm::lookAt(glm::vec3(position[0], position[1], position[2]),
+		glm::vec3(view_at[0], view_at[1], view_at[2]),
+		glm::vec3(up[0], up[1], up[2]));
 
-	glm::vec3 ox = glm::cross(oy, oz);
-
-	float qw = 0.5f * std::sqrt(ox[0] * ox[0] + oy[1] * oy[1] + oz[2] * oz[2] + 1);
-	float qx = (oz[1] - oy[2]) / (4.0f * qw);
-	float qy = (oz[0] - ox[2]) / (4.0f * qw);
-	float qz = (oy[0] - ox[1]) / (4.0f * qw);
-
-	orientation_quat.Setup(qx, qy, qz, qw);
+	glm::quat quat = glm::quat_cast(mat);
+	orientation_quat.Setup(quat.x, quat.y, quat.z, quat.w);
 }
 
 glm::mat4 CameraEntity::GetViewMatrix()
@@ -80,12 +77,26 @@ glm::mat4 CameraEntity::GetViewMatrix()
 	view_mat[2][2] = mat[2][2];
 	view_mat[2][3] = 0.0f;
 
-	view_mat[3][0] = position[0];
-	view_mat[3][1] = position[1];
-	view_mat[3][2] = position[2];
-	view_mat[3][3] = 1.0f;
+	view_mat = glm::translate(view_mat, glm::vec3(-position[0], -position[1], -position[2]));
+
+	std::cout << view_mat[1][0] << " - " << view_mat[1][1] << " - " << view_mat[1][2] << std::endl;
 
 	return view_mat;
+}
+
+void CameraEntity::RotateCam()
+{
+	orientation_quat.Rotate(std::sin(0.1f * 3.1415f / 180.0f), 0.0f, 0.0f, std::cos(0.1f * 3.1415f / 180.0f));
+
+	glm::mat4 mat_view = GetViewMatrix();
+	position[0] = mat_view[2][0] * 18.0f;
+	position[1] = mat_view[2][1] * 18.0f;
+	position[2] = mat_view[2][2] * 18.0f;
+
+	glm::vec3 vec = glm::vec3(position[0], position[1], position[2]);
+	auto up = glm::cross(vec, glm::vec3(1.0f, 0.0f, 0.0f));
+	up = glm::normalize(up);
+	std::cout << up.x << " - " << up.y << " - " << up.z << std::endl;
 }
 
 static glm::vec3 CalCamPos(const glm::vec3& axe, float delta, const glm::vec3& pos)

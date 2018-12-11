@@ -16,7 +16,6 @@ class PickingObject;
 class Settings
 {
 public:
-	glm::vec3 view_position;
 	glm::mat4 view_matrix;
 	glm::mat4 projection_matrix;
 	GLFWwindow* window;

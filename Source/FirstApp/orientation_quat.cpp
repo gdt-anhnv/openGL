@@ -1,4 +1,5 @@
 #include "orientation_quat.h"
+#include "glm/gtc/quaternion.hpp"
 
 #include <iostream>
 
@@ -36,4 +37,26 @@ void OrientationQuat::Setup(float _x, float _y, float _z, float _w)
 	y = _y;
 	z = _z;
 	w = _w;
+}
+
+void OrientationQuat::Rotate(float _x, float _y, float _z, float _w)
+{
+	glm::quat quat1;
+	quat1.x = x;
+	quat1.y = y;
+	quat1.z = z;
+	quat1.w = w;
+
+	glm::quat quat2;
+	quat2.x = _x;
+	quat2.y = _y;
+	quat2.z = _z;
+	quat2.w = _w;
+
+	glm::quat ret_quat = quat1 * quat2;
+
+	x = ret_quat.x;
+	y = ret_quat.y;
+	z = ret_quat.z;
+	w = ret_quat.w;
 }

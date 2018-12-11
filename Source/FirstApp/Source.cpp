@@ -34,73 +34,7 @@ using namespace glm;
 
 void MouseEvent(GLFWwindow* window, int button, int action, int mods)
 {
-	if (GLFW_MOUSE_BUTTON_LEFT == button && GLFW_PRESS == action)
-	{
-		Singleton<GlobalVars>::GetInstance()->is_mouse_pressed = true;
-		double xpos = 0.0;
-		double ypos = 0.0;
-		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window, &xpos, &ypos);
-		std::cout << xpos << " - " << ypos << std::endl;
-
-		{
-			CameraEntity* cam_ent = Singleton<GlobalVars>::GetInstance()->camera_entity;
-			cam_ent->mouse_position[0] = xpos;
-			cam_ent->mouse_position[1] = ypos;
-		}
-
-		int width = 0;
-		int height = 0;
-		glfwGetWindowSize(Singleton<Settings>::GetInstance()->window, &width, &height);
-
-		glm::vec4 ray_start = glm::vec4(
-			(xpos / (float)width - 0.5f) * 2.0f,
-			(ypos / (float)height - 0.5f) * 2.0f,
-			-1.0f, 1.0f);
-		glm::vec4 ray_end = glm::vec4(
-			(xpos / (float)width - 0.5f) * 2.0f,
-			(ypos / (float)height - 0.5f) * 2.0f,
-			0.0f, 1.0f);
-
-		glm::mat4 inverse_proj = glm::inverse(Singleton<Settings>::GetInstance()->projection_matrix);
-		glm::mat4 inverse_view = glm::inverse(Singleton<Settings>::GetInstance()->view_matrix);
-
-		glm::vec4 ray_start_cam = inverse_proj * ray_start;
-		ray_start_cam /= ray_start_cam.w;
-		glm::vec4 ray_start_world = inverse_view * ray_start_cam;
-		ray_start_world /= ray_start_world.w;
-		glm::vec4 ray_end_cam = inverse_proj * ray_end;
-		ray_end_cam /= ray_end_cam.w;
-		glm::vec4 ray_end_world = inverse_view * ray_end_cam;
-		ray_end_world /= ray_end_world.w;
-
-		glm::vec3 ray_dir_world(ray_end_world - ray_start_world);
-		ray_dir_world = glm::normalize(ray_dir_world);
-
-		glm::vec3 vp = Singleton<Settings>::GetInstance()->view_position;
-		glm::vec3 out_end = vp + ray_dir_world * 1000.0f;
-
-		btCollisionWorld::ClosestRayResultCallback RayCallback(
-			btVector3(vp.x, vp.y, vp.z),
-			btVector3(out_end.x, out_end.y, out_end.z));
-		Singleton<Settings>::GetInstance()->picking_object_manager->dynamic_world->rayTest(
-			btVector3(vp.x, vp.y, vp.z),
-			btVector3(out_end.x, out_end.y, out_end.z),
-			RayCallback);
-
-		if (RayCallback.hasHit()) {
-			std::cout << (int)RayCallback.m_collisionObject->getUserIndex() << std::endl;
-		}
-		else {
-			std::cout << "background" << std::endl;
-		}
-	}
-	else if (GLFW_MOUSE_BUTTON_LEFT == button && GLFW_RELEASE == action)
-	{
-		Singleton<GlobalVars>::GetInstance()->is_mouse_pressed = false;
-	}
-
-	if (Singleton<GlobalVars>::GetInstance()->is_mouse_pressed)
-		std::cout << "mouse is pressing!" << std::endl;
+	return;
 }
 
 int main(void)
@@ -159,19 +93,19 @@ int main(void)
 
 	{
 		Entity* entity = new Entity();
-		entity->SetPosition(2.0, 0.0, 0.0);
+		entity->SetPosition(2.0f, 0.0f, 0.0f);
 		ents.push_back(entity);
 	}
 
 	{
 		Entity* entity = new Entity();
-		entity->SetPosition(-2.0, 0.0, 0.0);
+		entity->SetPosition(-2.0f, 0.0f, 0.0f);
 		ents.push_back(entity);
 	}
 
 	{
 		Entity* entity = new Entity();
-		entity->SetPosition(0.0, 3.0, 0.0);
+		entity->SetPosition(0.0f, 3.0f, 0.0f);
 		ents.push_back(entity);
 	}
 
@@ -247,15 +181,11 @@ int main(void)
 		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window,
 			&cam_ent->mouse_position[0], &cam_ent->mouse_position[1]);
 
-	//cam_ent->SetViewAt(0.0f, 0.0f, 0.0f);
-	cam_ent->SetPosition(0.0f, 0.0f, 8.0f);
-	float dir_vec[3] = { 0.0, 0.0, -1.0 };
+	cam_ent->SetPosition(0.0f, 0.0f, 18.0f);
+	cam_ent->SetViewAt(0.0f, 0.0f, 0.0f);
 	float up_vec[3] = { 0.0, 1.0, 0.0 };
-	cam_ent->InitOrientation(dir_vec, up_vec);
-	//cam_ent->SetUpDir(0.0, 1.0, 0.0);
-	//cam_ent->SetDirection(0.0, 0.0, 1.0);
+	cam_ent->InitOrientation(up_vec);
 	Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
-	Singleton<Settings>::GetInstance()->view_position = glm::vec3(center.x, center.y, center.z + length);
 
 	BasicProgram* bp = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));
 	bp->SetLightPosition(400.0f, 400.0f, 400.0f);
@@ -272,15 +202,8 @@ int main(void)
 		// Clear the screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//update mouse position
-		if(Singleton<GlobalVars>::GetInstance()->is_mouse_pressed)
-		{
-			double xpos = 0.0;
-			double ypos = 0.0;
-			glfwGetCursorPos(Singleton<Settings>::GetInstance()->window, &xpos, &ypos);
-			cam_ent->UpdateMousePos(xpos, ypos);
-			Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
-		}
+		Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
+		cam_ent->RotateCam();
 
 		bp->Draw();
 		Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->Draw();

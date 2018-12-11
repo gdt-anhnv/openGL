@@ -27,9 +27,10 @@ public:
 	//void SetDirection(float x, float y, float z);
 	//void SetUpDir(float x, float y, float z);
 	void SetViewAt(float x, float y, float z);
-	void InitOrientation(float* direction, float* up);
+	void InitOrientation(float* up);
 
 	glm::mat4 GetViewMatrix();
+	void RotateCam();
 	void UpdateMousePos(double x, double y);
 };
 
