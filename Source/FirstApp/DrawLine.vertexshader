@@ -1,6 +1,6 @@
 #version 330 core
 in vec3 aPos;
-layout (location=5) in mat4 MVP;
+in mat4 MVP;
 void main()
 {
    gl_Position = MVP * vec4(aPos.x, aPos.y, aPos.z, 1.0);

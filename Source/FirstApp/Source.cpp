@@ -181,10 +181,10 @@ int main(void)
 		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window,
 			&cam_ent->mouse_position[0], &cam_ent->mouse_position[1]);
 
-	cam_ent->SetPosition(0.0f, 0.0f, 18.0f);
-	cam_ent->SetViewAt(0.0f, 0.0f, 0.0f);
+	float cam_pos[3] = { 0.0f, 0.0f, 18.0f };
+	float view_at[3] = { 0.0f, 0.0f, 0.0f };
 	float up_vec[3] = { 0.0, 1.0, 0.0 };
-	cam_ent->InitOrientation(up_vec);
+	cam_ent->InitOrientation(cam_pos, view_at, up_vec);
 	Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
 
 	BasicProgram* bp = new BasicProgram(LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader"));

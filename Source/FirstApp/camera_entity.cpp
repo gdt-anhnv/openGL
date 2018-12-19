@@ -8,7 +8,7 @@
 CameraEntity::CameraEntity() :
 	position{},
 	//direction{},
-	//up{},
+	up_dir{},
 	view_at{},
 	orientation_quat{ 0.0f, 0.0f, 0.0f, 0.0f },
 	mouse_position{}
@@ -19,12 +19,12 @@ CameraEntity::~CameraEntity()
 {
 }
 
-void CameraEntity::SetPosition(float x, float y, float z)
-{
-	position[0] = x;
-	position[1] = y;
-	position[2] = z;
-}
+//void CameraEntity::SetPosition(float x, float y, float z)
+//{
+//	position[0] = x;
+//	position[1] = y;
+//	position[2] = z;
+//}
 
 //void CameraEntity::SetDirection(float x, float y, float z)
 //{
@@ -32,7 +32,7 @@ void CameraEntity::SetPosition(float x, float y, float z)
 //	direction[1] = y;
 //	direction[2] = z;
 //}
-//
+
 //void CameraEntity::SetUpDir(float x, float y, float z)
 //{
 //	up[0] = x;
@@ -40,20 +40,33 @@ void CameraEntity::SetPosition(float x, float y, float z)
 //	up[2] = z;
 //}
 
-void CameraEntity::SetViewAt(float x, float y, float z)
-{
-	view_at[0] = x;
-	view_at[1] = y;
-	view_at[2] = z;
-}
+//void CameraEntity::SetViewAt(float x, float y, float z)
+//{
+//	view_at[0] = x;
+//	view_at[1] = y;
+//	view_at[2] = z;
+//}
 
-void CameraEntity::InitOrientation(float * up)
+void CameraEntity::InitOrientation(float* pos, float* va, float* up)
 {
-	glm::mat4 mat = glm::lookAt(glm::vec3(position[0], position[1], position[2]),
+	position[0] = pos[0];
+	position[1] = pos[1];
+	position[2] = pos[2];
+
+	view_at[0] = va[0];
+	view_at[1] = va[1];
+	view_at[2] = va[2];
+
+	up_dir[0] = up[0];
+	up_dir[1] = up[1];
+	up_dir[2] = up[2];
+
+	auto trans = glm::lookAt(glm::vec3(position[0], position[1], position[2]),
 		glm::vec3(view_at[0], view_at[1], view_at[2]),
-		glm::vec3(up[0], up[1], up[2]));
+		glm::vec3(up_dir[0], up_dir[1], up_dir[2]));
 
-	glm::quat quat = glm::quat_cast(mat);
+	auto quat = glm::quat_cast(trans);
+
 	orientation_quat.Setup(quat.x, quat.y, quat.z, quat.w);
 }
 
@@ -86,12 +99,20 @@ glm::mat4 CameraEntity::GetViewMatrix()
 
 void CameraEntity::RotateCam()
 {
-	orientation_quat.Rotate(std::sin(0.1f * 3.1415f / 180.0f), 0.0f, 0.0f, std::cos(0.1f * 3.1415f / 180.0f));
+	orientation_quat.Rotate(
+		0.0f,
+		1.0f / std::sqrt(2.0f) * std::sin(10.0f * 3.1415f / 180.0f),
+		0.0f,
+		1.0f / std::sqrt(2.0f) * std::cos(10.0f * 3.1415f / 180.0f));
 
 	glm::mat4 mat_view = GetViewMatrix();
 	position[0] = mat_view[2][0] * 18.0f;
-	position[1] = -mat_view[2][1] * 18.0f;
+	position[1] = mat_view[2][1] * 18.0f;
 	position[2] = mat_view[2][2] * 18.0f;
+
+	auto look_at = glm::lookAt(glm::vec3(position[0], position[1], position[2]),
+		glm::vec3(view_at[0], view_at[1], view_at[2]),
+		glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::vec3 vec = glm::vec3(position[0], position[1], position[2]);
 	auto up = glm::cross(vec, glm::vec3(1.0f, 0.0f, 0.0f));

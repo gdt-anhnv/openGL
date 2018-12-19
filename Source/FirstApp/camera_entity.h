@@ -12,7 +12,7 @@ class CameraEntity
 private:
 	float position[3];
 	//float direction[3];
-	//float up[3];
+	float up_dir[3];
 	float view_at[3];
 
 	OrientationQuat orientation_quat;
@@ -23,11 +23,11 @@ public:
 	CameraEntity();
 	~CameraEntity();
 
-	void SetPosition(float x, float y, float z);
+	//void SetPosition(float x, float y, float z);
 	//void SetDirection(float x, float y, float z);
 	//void SetUpDir(float x, float y, float z);
-	void SetViewAt(float x, float y, float z);
-	void InitOrientation(float* up);
+	//void SetViewAt(float x, float y, float z);
+	void InitOrientation(float* pos, float* va, float* up);
 
 	glm::mat4 GetViewMatrix();
 	void RotateCam();
