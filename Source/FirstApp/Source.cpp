@@ -203,7 +203,7 @@ int main(void)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
-		cam_ent->RotateCam();
+		//cam_ent->RotateCam();
 
 		Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->Draw();
 		bp->Draw();

@@ -67,7 +67,8 @@ void CameraEntity::InitOrientation(float* pos, float* va, float* up)
 
 	auto quat = glm::quat_cast(trans);
 
-	orientation_quat.Setup(quat.x, quat.y, quat.z, quat.w);
+	//orientation_quat.Setup(quat.x, quat.y, quat.z, quat.w);
+	orientation_quat.Setup(0.0f, -1.0f / sqrt(2.0f), 0.0f, 1.0f / sqrt(2.0f));
 }
 
 glm::mat4 CameraEntity::GetViewMatrix()
@@ -90,9 +91,12 @@ glm::mat4 CameraEntity::GetViewMatrix()
 	view_mat[2][2] = mat[2][2];
 	view_mat[2][3] = 0.0f;
 
+	position[0] = mat[0][2] * 18.0f;
+	position[1] = mat[1][2] * 18.0f;
+	position[2] = mat[2][2] * 18.0f;
 	view_mat = glm::translate(view_mat, glm::vec3(-position[0], -position[1], -position[2]));
 
-	std::cout << view_mat[1][0] << " - " << view_mat[1][1] << " - " << view_mat[1][2] << std::endl;
+	//std::cout << view_mat[1][0] << " - " << view_mat[1][1] << " - " << view_mat[1][2] << std::endl;
 
 	return view_mat;
 }
@@ -101,14 +105,11 @@ void CameraEntity::RotateCam()
 {
 	orientation_quat.Rotate(
 		0.0f,
-		1.0f / std::sqrt(2.0f) * std::sin(10.0f * 3.1415f / 180.0f),
 		0.0f,
-		1.0f / std::sqrt(2.0f) * std::cos(10.0f * 3.1415f / 180.0f));
+		1.0f / std::sqrt(2.0f) * std::sin(0.2f * 3.1415f / 180.0f),
+		1.0f / std::sqrt(2.0f) * std::cos(0.2f * 3.1415f / 180.0f));
 
 	glm::mat4 mat_view = GetViewMatrix();
-	position[0] = mat_view[2][0] * 18.0f;
-	position[1] = mat_view[2][1] * 18.0f;
-	position[2] = mat_view[2][2] * 18.0f;
 
 	auto look_at = glm::lookAt(glm::vec3(position[0], position[1], position[2]),
 		glm::vec3(view_at[0], view_at[1], view_at[2]),
@@ -117,7 +118,7 @@ void CameraEntity::RotateCam()
 	glm::vec3 vec = glm::vec3(position[0], position[1], position[2]);
 	auto up = glm::cross(vec, glm::vec3(1.0f, 0.0f, 0.0f));
 	up = glm::normalize(up);
-	std::cout << up.x << " - " << up.y << " - " << up.z << std::endl;
+	//std::cout << up.x << " - " << up.y << " - " << up.z << std::endl;
 }
 
 static glm::vec3 CalCamPos(const glm::vec3& axe, float delta, const glm::vec3& pos)
