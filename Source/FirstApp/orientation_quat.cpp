@@ -56,3 +56,7 @@ void OrientationQuat::Rotate(float _x, float _y, float _z, float _w)
 	z = ret_quat.z;
 	w = ret_quat.w;
 }
+
+void OrientationQuat::RotateAbit()
+{
+}

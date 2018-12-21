@@ -18,6 +18,7 @@ public:
 	glm::mat3 ToMatrix() const;
 	void Setup(float _x, float _y, float _z, float _w);
 	void Rotate(float _x, float _y, float _z, float _w);
+	void RotateAbit();
 };
 
 #endif

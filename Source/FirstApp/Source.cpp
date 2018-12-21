@@ -181,8 +181,8 @@ int main(void)
 		glfwGetCursorPos(Singleton<Settings>::GetInstance()->window,
 			&cam_ent->mouse_position[0], &cam_ent->mouse_position[1]);
 
-	float cam_pos[3] = { 0.0f, 0.0f, 18.0f };
-	float view_at[3] = { 0.0f, 0.0f, 0.0f };
+	float cam_pos[3] = { 0.0f, 0.0f, 8.0f };
+	float view_at[3] = { center[0], center[1], center[2] };
 	float up_vec[3] = { 0.0, 1.0, 0.0 };
 	cam_ent->InitOrientation(cam_pos, view_at, up_vec);
 	Singleton<Settings>::GetInstance()->view_matrix = cam_ent->GetViewMatrix();
@@ -195,7 +195,7 @@ int main(void)
 		bp->AddEntity(*iter);
 		bp->PreDrawing();
 	}
-	
+
 	Singleton<GlobalVars>::GetInstance()->debug_bullet_engine->PreDrawing();
 	Singleton<Settings>::GetInstance()->picking_object_manager->dynamic_world->debugDrawWorld();
 	do {
